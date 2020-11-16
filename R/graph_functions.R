@@ -6,6 +6,8 @@ library(MASS)
 library(mvtnorm)
 library(JGL)
 library(Matrix)
+library(foreach)
+library(doParallel)
 
 sparsity = function(g){
   # Function for calculating the sparsity of a graph. Checks if diagonal elements are zero.
