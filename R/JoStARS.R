@@ -10,10 +10,10 @@ JoStARS = function(Y,penalty="fused",rho=1,weights="equal",scale=T,penalize.diag
   # Start by tuning lambda1, fixing lambda2
   est = list()
   if (scale) Y=lapply(Y,scale)
-  est.lambda1 = JGL_select_lambda1(Y,penalty=penalty,rho=rho,weights=weights, penalize.diagonal=penalize.diagonal, stars.thresh=stars.thresh, 
+  est.lambda1 = JoStARS_select_lambda1(Y,penalty=penalty,rho=rho,weights=weights, penalize.diagonal=penalize.diagonal, stars.thresh=stars.thresh, 
                                    stars.subsample.ratio=stars.subsample.ratio, rep.num=rep.num,nlambda1=nlambda1,lambda1.min=lambda1.min,
                                    lambda1.max=lambda1.max, lambda2=lambda2.init,verbose=verbose,parallelize=parallelize,nCores=nCores)
-  est.lambda2 = JGL_select_lambda2_eBIC(Y,penalty=penalty,rho=rho,weights=weights,penalize.diagonal=penalize.diagonal,
+  est.lambda2 = JoStARS_select_lambda2_eBIC(Y,penalty=penalty,rho=rho,weights=weights,penalize.diagonal=penalize.diagonal,
                                         nlambda2=nlambda2,lambda2.min=lambda2.min,lambda2.max=lambda2.max, 
                                         lambda1=est.lambda1$opt.lambda1,gamma=ebic.gamma,verbose=verbose,parallelize=parallelize,
                                         nCores=nCores)
@@ -25,7 +25,7 @@ JoStARS = function(Y,penalty="fused",rho=1,weights="equal",scale=T,penalize.diag
   est$opt.fit = est.lambda2$opt.fit # The final fit
   est$opt.sparsities = est.lambda2$opt.sparsities # Final optimal sparsity
   if(retune.lambda1){
-    est.lambda1 = JGL_select_lambda1(Y,penalty=penalty,rho=rho,weights=weights, penalize.diagonal=penalize.diagonal, stars.thresh=stars.thresh, 
+    est.lambda1 = JoStARS_select_lambda1(Y,penalty=penalty,rho=rho,weights=weights, penalize.diagonal=penalize.diagonal, stars.thresh=stars.thresh, 
                                      stars.subsample.ratio=stars.subsample.ratio, rep.num=rep.num,nlambda1=nlambda1,lambda1.min=lambda1.min,
                                      lambda1.max=lambda1.max, lambda2=est.lambda2$opt.lambda2,verbose=verbose,parallelize=parallelize,nCores=nCores)
     est$opt.fit = est.lambda1$opt.fit # The final fit
