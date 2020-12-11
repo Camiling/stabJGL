@@ -9,181 +9,352 @@ library(Matrix)
 library(foreach)
 library(doParallel)
 
-sparsity = function(g){
-  # Function for calculating the sparsity of a graph. Checks if diagonal elements are zero.
-  g=g+0 # Added this later
-  p=dim(g)[1]
-  if(g[1,1]==0) return(sum(g!=0)/(p^2-p))
-  else return((sum(g!=0)-p)/(p^2-p) )
+#' Find the simplified matrix distance measure between two precision matrices.
+#'
+#' Computes the matrix distance between two sparse precision matrices. The measure has a value in \eqn{[0,1]} where a value of 0 means the matrices are identical in terms of the magnitude of the corresponding partial correlations, while 1 means they are completely unrelated.
+#'
+#' @param mat1 The first precision matrix. Assumed to be sparse.
+#'
+#' @param mat2 The second precision matrix. Assumed to be sparse.
+#'
+#' @seealso \code{\link{tailoredGlasso}}
+#'
+#'
+#' @return Numeric matrix distance.
+#'
+#'
+#' @export
+#'
+#' @author Camilla Lingjaerde
+#'
+#'
+#' @examples
+#'
+#' # example 1: simple example with two unrelated matrices
+#' # generate data and prior matrix
+#' set.seed(123)
+#' x1 <- matrix(rnorm(40 * 20), ncol = 20)
+#' x2 <- matrix(rnorm(40 * 20), ncol = 20)
+#' # the precision matrices
+#' prec.mat.1 <- solve(var(x1))
+#' prec.mat.2 <- solve(var(x2))
+#' # make them sparse by threshold values. Do not make diagonal elements zero.
+#' prec.mat.1[which(abs(prec.mat.1) < 1.5 & !diag(ncol(prec.mat.1)))] <- 0
+#' prec.mat.2[which(abs(prec.mat.2) < 1.5 & !diag(ncol(prec.mat.2)))] <- 0
+#' matrix.distance.simple(prec.mat.1, prec.mat.2)
+matrix.distance <- function(mat1, mat2) {
+  p <- nrow(mat1)
+  if (mean(dim(mat1) == dim(mat2)) != 1) stop("matrices must have the same dimension")
+  if (any(diag(mat1) == 0) | any(diag(mat2) == 0)) stop("diagonal elements of precision matrices cannot be zero")
+  # Disregard almost-zero entries:
+  mat1[which(abs(mat1) < 10^(-4), arr.ind = T)] <- 0
+  mat2[which(abs(mat2) < 10^(-4), arr.ind = T)] <- 0
+  m1 <- stats::cov2cor(as.matrix(Matrix::forceSymmetric(mat1)))
+  m2 <- stats::cov2cor(as.matrix(Matrix::forceSymmetric(mat2)))
+  observed.dist <- sum(abs(abs(m1) - abs(m2)))
+  expected.dist <- (sum(abs(m1)) + sum(abs(m2)) - 2 * p)
+  if (expected.dist == 0) { # No edges in either graph.
+    mat.dist <- 0
+  }
+  else {
+    mat.dist <- observed.dist / expected.dist
+  }
+  return(mat.dist)
 }
 
-# Function for assigning colors to each vertex according to their degree. Returns vector of color codes. 
-color.by.degree = function(adj.mat){
-  # adj.mat is the igraph adjacency matrix object.
-  # Luminance is in [0,100], where low degrees have high luminance. 
-  luminance= 100-(degree(adj.mat)-min(degree(adj.mat)))/(max(degree(adj.mat))-min(degree(adj.mat)))*100 
-  return( hcl(c=80,l=luminance,h=0) ) # Pink colors, darker means higher degree. 
+#' The sparsity of a graph
+#'
+#' Finds the sparsity of a graph. The measure has a value in \eqn{[0,1]} where a value of \eqn{1} means there are edges between all nodes while a value of \eqn{0} means there are no edges in the graph.
+#'
+#' @param g The adjacency matrix of the graph.
+#'
+#'
+#' @seealso \code{\link{tailoredGlasso}} and \code{\link{confusion.matrix}}
+#'
+#'
+#' @return Numeric sparsity.
+#'
+#'
+#' @export
+#'
+#' @author Camilla Lingjaerde
+#'
+#'
+#' @examples
+#'
+#' # example 1: simple example with two unrelated matrices
+#' # generate data
+#' set.seed(123)
+#' n <- 80
+#' p <- 100
+#' dat <- huge::huge.generator(n = n, d = p, graph = "scale-free")
+#' sparsity(dat$theta)
+sparsity <- function(g) {
+  if (nrow(g) != ncol(g)) stop("adjacency matrix must be square.")
+  g <- g + 0
+  p <- dim(g)[1]
+  if (g[1, 1] == 0) { # If diagonal elements are not given, do not subtract p.
+    return(sum(g != 0) / (p^2 - p))
+  }
+  else {
+    return((sum(g != 0) - p) / (p^2 - p))
+  }
 }
 
-gaussianloglik = function(sample.cov,theta,n){
-  # Find the loglikelihood. Sample.cov is empirical covariance matrix, theta is the estimated precision matrix. n is number of observations
-  p=nrow(theta)
-  return(-p*n*log(2*pi)/2 + n*log(det(theta))/2 -n*sum(diag(sample.cov%*%theta))/2)
+#' Calculates the log likelihood of a precision matrix
+#'
+#' Finds the the profille log likelihood of a precision matrix given a sample covariance matrix, in the setting of Gaussian graphical models.
+#'
+#' @param sample.cov The sample covariance matrix of the observed data.
+#' @param theta The estimated precision matrix.
+#' @param n  The number of observations.
+#'
+#' @seealso \code{\link{tailoredGlasso}}
+#'
+#' @return Numerical value of the multivariate Gaussian profile log likelihood of the precision matrix.
+#'
+#' @export
+#'
+#' @author Camilla Lingjaerde
+#'
+#'
+#' @examples
+#'
+#' # example 1: simple example where we check the log likelihood of the true precision matrix
+#' # generate data
+#' set.seed(123)
+#' n <- 80
+#' p <- 100
+#' dat <- huge::huge.generator(n = n, d = p, graph = "scale-free")
+#' prec.mat <- dat$omega # true precision matrix
+#' gaussianloglik(var(dat$data), prec.mat, n)
+#' @keywords internal
+gaussianloglik <- function(sample.cov, theta, n) {
+  if (mean(dim(sample.cov) == dim(theta)) != 1) stop("matrices must have the same dimension")
+  if (det(theta) <= 0) stop("precision matrix must be positive definite.")
+  if (!isSymmetric(sample.cov)) stop("sample covariance matrix must be symmetric")
+  if (n <= 0) stop("number of observations n must be positive")
+  p <- nrow(theta)
+  return(-p * n * log(2 * pi) / 2 + n * log(det(theta)) / 2 -
+           n * sum(diag(sample.cov %*% theta)) / 2)
 }
 
+#' Calculates the AIC score of an estimated precision matrix
+#'
+#' Finds the AIC score of an estimated precision matrix given a sample covariance matrix, in the setting of Gaussian graphical models.
+#'
+#' @param sample.cov The sample covariance matrix of the observed data.
+#' @param theta The estimated precision matrix.
+#' @param n  The number of observations.
+#'
+#' @seealso \code{\link{tailoredGlasso}}
+#'
+#' @return The AIC score.
+#'
+#' @export
+#'
+#' @author Camilla Lingjaerde
+#'
+#'
+#' @examples
+#'
+#' # example 1: simple example where we check the AIC score of the true precision matrix
+#' # generate data
+#' set.seed(123)
+#' n <- 80
+#' p <- 100
+#' dat <- huge::huge.generator(n = n, d = p, graph = "scale-free")
+#' prec.mat <- dat$omega # true precision matrix
+#' gaussianAIC(var(dat$data), prec.mat, n)
+gaussianAIC <- function(sample.cov, theta, n) {
+  p <- nrow(theta)
+  theta2 <- theta
+  diag(theta2) <- rep(0, p)
+  d <- sum(theta2 != 0) / 2
+  return(-2 * tailoredGlasso::gaussianloglik(sample.cov, theta, n) + 2 * d)
+}
 
-eBIC = function(sample.cov,theta,n,gamma){
-  # Find eBIC score.
-  # sample.cov is the empirical covariance matrix, theta is the estimated precision matrix, n no of observations
-  # gamma is to be tuned. 
-  p=nrow(theta)
-  theta2=theta
-  diag(theta2) = rep(0,p)
-  d=sum(theta2!=0)/2 # Number of edges
-  loglik = -p*n*log(2*pi)/2 + n*log(det(theta))/2 -n*sum(diag(sample.cov%*%theta))/2
-  ebic = -2*loglik + d*log(n) + 4*d*gamma*log(p)
+#' Calculate the extended BIC (eBIC) score of an estimated precision matrix
+#'
+#' Finds the extended bIC (eBIC) score of an estimated precision matrix given a sample covariance matrix, in the setting of Gaussian graphical model.
+#'
+#' @param sample.cov The sample covariance matrix of the observed data.
+#' @param theta The estimated precision matrix.
+#' @param n  The number of observations.
+#' @param gamma  The value of the additional edge penalty parameter \eqn{\gamma} to use in the eBIC. Default value is \eqn{0}.
+#'
+#' @seealso \code{\link{tailoredGlasso}}
+#'
+#' @return The eBIC score.
+#'
+#' @export
+#'
+#' @author Camilla Lingjaerde
+#'
+#' @examples
+#'
+#' # example 1: simple example where we check the eBIC score of the true precision matrix
+#' # generate data
+#' set.seed(123)
+#' n <- 80
+#' p <- 100
+#' dat <- huge::huge.generator(n = n, d = p, graph = "scale-free")
+#' prec.mat <- dat$omega # true precision matrix
+#' eBIC(var(dat$data), prec.mat, n, gamma = 0.2)
+eBIC <- function(sample.cov, theta, n, gamma = 0) {
+  if (mean(dim(sample.cov) == dim(theta)) != 1) stop("matrices must have the same dimension")
+  if (det(theta) <= 0) stop("precision matrix must be positive definite.")
+  if (!isSymmetric(sample.cov)) stop("sample covariance matrix must be symmetric")
+  if (n <= 0) stop("number of observations n must be positive")
+  if (gamma < 0) stop("gamma cannot be negative in eBIC")
+  p <- nrow(theta)
+  theta2 <- theta
+  diag(theta2) <- rep(0, p)
+  d <- sum(theta2 != 0) / 2
+  loglik <- -p * n * log(2 * pi) / 2 + n * log(det(theta)) / 2
+  -n * sum(diag(sample.cov %*% theta)) / 2
+  ebic <- -2 * loglik + d * log(n) + 4 * d * gamma * log(p)
   return(ebic)
 }
 
-
-# Find Matthews correlation coefficient for estimated graph
-MCC = function(g,g.hat){
-  p = nrow(g[,])
-  diag(g) = rep(0,p) # Let diagonal elements be zero
-  diag(g.hat) = rep(0,p) 
-  tp = sum(g.hat ==1 & g ==1)/10 # True positives. Divide by 10 to avoid integer overflow. 
-  fp = sum(g.hat ==1 & g ==0)/10 # False positives
-  tn = (sum(g.hat == 0 & g == 0) - p)/10 # True negatives (do not include diagonal elements)
-  fn = sum(g.hat == 0 & g == 1)/10 # False negatives
-  return((tp*tn - fp*fn)/(sqrt((tp+fp)*(tp+fn)*(tn+fp)*(tn+fn))))
+#' Find the confusion matrix of a graph and an estimate of it
+#'
+#' Finds the confusion matrix of an inferred graph and the graph it aims to estimate.
+#'
+#' @param g The adjacency matrix of the true graph.
+#'
+#' @param g.hat The adjacency matrix of the estimated graph.
+#'
+#' @seealso \code{\link{tailoredGlasso}}
+#'
+#'
+#' @return The \eqn{2} by \eqn{2} confusion matrix. Element \code{[1,1]} is the number of true positives, element \code{[1,2]} the number of false positives, element  \code{[2,1]} the number of false negatives and  \code{[2,2]} the number of true negatives.
+#'
+#'
+#' @export
+#'
+#' @author Camilla Lingjaerde
+#'
+#'
+#' @examples
+#'
+#' # example 1: simple example with two unrelated matrices
+#' # generate data and prior matrix
+#' set.seed(123)
+#' x1 <- matrix(rnorm(40 * 20), ncol = 20)
+#' x2 <- matrix(rnorm(40 * 20), ncol = 20)
+#' # the precision matrices
+#' prec.mat.1 <- solve(var(x1))
+#' prec.mat.2 <- solve(var(x2))
+#' # make them sparse by threshold values. Do not make diagonal elements zero.
+#' prec.mat.1[which(abs(prec.mat.1) < 1.5 & !diag(ncol(prec.mat.1)))] <- 0
+#' prec.mat.2[which(abs(prec.mat.2) < 1.5 & !diag(ncol(prec.mat.2)))] <- 0
+#' confusion.matrix(prec.mat.1 != 0, prec.mat.2 != 0)
+confusion.matrix <- function(g, g.hat) {
+  if (mean(dim(g[, ]) == dim(g.hat[, ])) != 1) stop("matrices must have the same dimension")
+  if (mean((g[, ] + 0) %in% c(0, 1)) != 1 | mean((g.hat[, ] + 0) %in% c(0, 1)) != 1) stop("g and g.hat must be adjacency matrices with elements in {0,1}")
+  p <- nrow(g[, ])
+  g <- g[, ]
+  g.hat <- g.hat[, ]
+  diag(g) <- rep(0, p)
+  diag(g.hat[, ]) <- rep(0, p) # Do not include diagonal elements.
+  # Divide by 10 to avoid integer overflow.
+  tp <- sum(g.hat[, ] == 1 & g[, ] == 1) / 10 # True positives.
+  fp <- sum(g.hat[, ] == 1 & g[, ] == 0) / 10 # False positives
+  tn <- (sum(g.hat[, ] == 0 & g[, ] == 0) - p) / 10 # True negatives.
+  fn <- sum(g.hat[, ] == 0 & g[, ] == 1) / 10 # False negatives.
+  return(matrix(10 * c(tp, fp, fn, tn), nrow = 2, byrow = T) / 2)
 }
 
-confusion.matrix = function(g,g.hat){
-  # Newly changed: all must be halved! Since we look at the whole adjacency matrix. 
-  p = nrow(g[,])
-  g = g[,]
-  g.hat = g.hat[,]
-  diag(g) = rep(0,p) # Let diagonal elements be zero
-  diag(g.hat[,]) = rep(0,p) 
-  tp = sum(g.hat[,] ==1 & g[,] ==1)/10 # True positives. Divide by 10 to avoid integer overflow. 
-  fp = sum(g.hat[,] ==1 & g[,] ==0)/10 # False positives
-  tn = (sum(g.hat[,] == 0 & g[,] == 0) - p)/10 # True negatives (do not include diagonal elements)
-  fn = sum(g.hat[,] == 0 & g[,] == 1)/10 # False negatives
-  return(matrix(10*c(tp,fp,fn,tn),nrow=2,byrow=T)/2)
-}
-
-recall = function(g,g.hat){
-  # Sensitivity or True Positive Rate. What fraction of true edges are discovered?
-  conf.mat = confusion.matrix(g,g.hat)
-  if(conf.mat[1,1]==0 & conf.mat[2,1]==0) return(1) # Avoid zero division
-  else return(conf.mat[1,1]/(conf.mat[1,1]+conf.mat[2,1]))
-}
-
-precision = function(g,g.hat){
-  # Positive Predictive Value. What fraction of the estimated edges are actually true?
-  # Equal to 1-FDR
-  conf.mat = confusion.matrix(g,g.hat)
-  if(conf.mat[1,1]==0 & conf.mat[1,2]==0) return(1) # Avoid zero division
-  else return(conf.mat[1,1]/(conf.mat[1,1]+conf.mat[1,2]))
-}
-
-specificity = function(g,g.hat){
-  # Specificity. How many of the edges that should have been negative are? TN/(TN+FP)
-  conf.mat = confusion.matrix(g,g.hat)
-  if(conf.mat[1,2]==0 & conf.mat[2,2]==0) return(1) # Avoid zero division
-  else return(conf.mat[2,2]/(conf.mat[1,2]+conf.mat[2,2]))
-}
-
-FDR = function(g,g.hat){
-  # False Discovery Rate
-  return(1-precision(g,g.hat))
-}
-
-
-
-
-mutate.graph= function(graph,fraction){
-  # Mutate a given fraction of the edges of a graph. 
-  # graph is the huge.generate() object to mutate, fraction is the fraction of edges to change. 
-  # We basically 'swap pairs of nodes' by switching their cols and rows. 
-  prec.mat = graph$omega
-  prec.mat[which(abs(prec.mat)<10^(-4),arr.ind=T)]=0
-  cov.mat = graph$sigma
-  adj.mat = graph$theta
-  data=graph$data
-  p = ncol(graph$omega)
-  
-  adj.mat.upper = adj.mat
-  adj.mat.upper[lower.tri(adj.mat.upper)]=0
-  diag(adj.mat.upper) =0
-  edges = which(adj.mat.upper==1,arr.ind=T) # Edge pairs.
-  n.mutations = floor(nrow(edges)*fraction)
-  
-  if(n.mutations==0 | is.na(n.mutations)){
-    ans = list()
-    ans$cov.mat=cov.mat
-    ans$prec.mat = prec.mat
-    ans$adj.mat = adj.mat
-    ans$data = data
-    return(ans)
+#' Find the recall of an estimated graph
+#'
+#' Computes the recall of an inferred graph in terms of predicting the edges of the true one. The measure has a value in \eqn{[0,1]} where a value of \eqn{1} means all edges in \code{g} are included in \code{g.hat} while a value of \eqn{0} means no true edges are included.
+#'
+#' @param g The adjacency matrix of the true graph.
+#'
+#' @param g.hat The adjacency matrix of the estimated graph.
+#'
+#' @seealso \code{\link{tailoredGlasso}} and \code{\link{confusion.matrix}}
+#'
+#'
+#' @return Numeric recall.
+#'
+#' @export
+#'
+#' @author Camilla Lingjaerde
+#'
+#'
+#' @examples
+#'
+#' # example 1: simple example with two unrelated matrices
+#' # generate data and prior matrix
+#' set.seed(123)
+#' x1 <- matrix(rnorm(40 * 20), ncol = 20)
+#' x2 <- matrix(rnorm(40 * 20), ncol = 20)
+#' # the precision matrices
+#' prec.mat.1 <- solve(var(x1))
+#' prec.mat.2 <- solve(var(x2))
+#' # make them sparse by threshold values. Do not make diagonal elements zero.
+#' prec.mat.1[which(abs(prec.mat.1) < 1.5 & !diag(ncol(prec.mat.1)))] <- 0
+#' prec.mat.2[which(abs(prec.mat.2) < 1.5 & !diag(ncol(prec.mat.2)))] <- 0
+#' recall(prec.mat.1 != 0, prec.mat.2 != 0)
+recall <- function(g, g.hat) {
+  # use confusion.matrix to find FP, TP, TN and FN.
+  conf.mat <- tailoredGlasso::confusion.matrix(g, g.hat)
+  # check if there are no edges in g and hence no edges to predict. If so, we say the recall is one.
+  if (conf.mat[1, 1] == 0 & conf.mat[2, 1] == 0) {
+    return(1)
+  } # else compute recall
+  else {
+    return(conf.mat[1, 1] / (conf.mat[1, 1] + conf.mat[2, 1]))
   }
-  
-  edges.to.change.ind = sample(1:nrow(edges),n.mutations) # We let the first index stay, then change the second one. 
-  edges.to.change = edges[edges.to.change.ind,] # n.mutations x 2
-  nodes.add = sample(1:p,n.mutations) # id of nodes to give the edges
-  nodes.remove = edges[sample(1:nrow(edges),n.mutations),1] # The nodes to 'leave out'
-  for(i in 1:n.mutations){
-    tmp.prec=prec.mat
-    tmp.adj = adj.mat
-    tmp.dat = data
-    tmp.cov.mat = cov.mat
-    id.stay = edges.to.change[i,1]
-    id.remove = edges.to.change[i,2]
-    id.add=nodes.add[i]
-    # Swap prec mat elements in rows. Then cols, the order does not matter!
-    prec.mat[id.stay,id.add] = tmp.prec[id.stay,id.remove]
-    prec.mat[id.stay,id.remove] = tmp.prec[id.stay,id.add]
-    prec.mat[id.add,id.stay] = tmp.prec[id.remove,id.stay]
-    prec.mat[id.remove,id.stay] = tmp.prec[id.add,id.stay]
-    # swap adj mat rows
-    adj.mat[id.stay,id.add] = tmp.adj[id.stay,id.remove]
-    adj.mat[id.stay,id.remove] = tmp.adj[id.stay,id.add]
-    adj.mat[id.add,id.stay] = tmp.adj[id.remove,id.stay]
-    adj.mat[id.remove,id.stay] = tmp.adj[id.add,id.stay]
+}
+
+#' Find the precision of an estimated graph
+#'
+#' Computes the precision of an inferred graph in terms of predicting the edges of the true one. The measure has a value in \eqn{[0,1]} where a value of \eqn{1} means perfect prediction while a value of \eqn{0} means completely wrong.
+#'
+#' @param g The adjacency matrix of the true graph.
+#'
+#' @param g.hat The adjacency matrix of the estimated graph.
+#'
+#' @seealso \code{\link{tailoredGlasso}} and \code{\link{confusion.matrix}}
+#'
+#'
+#' @return Numeric precision.
+#'
+#'
+#' @export
+#'
+#' @author Camilla Lingjaerde
+#'
+#'
+#' @examples
+#'
+#' # example 1: simple example with two unrelated matrices
+#' # generate data and prior matrix
+#' set.seed(123)
+#' x1 <- matrix(rnorm(40 * 20), ncol = 20)
+#' x2 <- matrix(rnorm(40 * 20), ncol = 20)
+#' # the precision matrices
+#' prec.mat.1 <- solve(var(x1))
+#' prec.mat.2 <- solve(var(x2))
+#' # make them sparse by threshold values. Do not make diagonal elements zero.
+#' prec.mat.1[which(abs(prec.mat.1) < 1.5 & !diag(ncol(prec.mat.1)))] <- 0
+#' prec.mat.2[which(abs(prec.mat.2) < 1.5 & !diag(ncol(prec.mat.2)))] <- 0
+#' precision(prec.mat.1 != 0, prec.mat.2 != 0)
+precision <- function(g, g.hat) {
+  # use confusion.matrix to find FP, TP, TN and FN.
+  conf.mat <- tailoredGlasso::confusion.matrix(g, g.hat)
+  # check if there are no edges in g and hence no edges to predict. If so, we say the precision is one.
+  if (conf.mat[1, 1] == 0 & conf.mat[2, 1] == 0) {
+    return(1)
+  } # check if there are no edges in g.hat and hence no predictions made. If so, we say the precision is one.
+  else if (conf.mat[1, 1] == 0 & conf.mat[1, 2] == 0) {
+    return(1)
+  } # else compute precision
+  else {
+    return(conf.mat[1, 1] / (conf.mat[1, 1] + conf.mat[1, 2]))
   }
-  ans = list()
-  ans$cov.mat=solve(prec.mat)
-  ans$cov.mat[which(abs(ans$cov.mat)<1e-4,arr.ind = T)] = 0
-  ans$prec.mat = prec.mat
-  ans$adj.mat = adj.mat
-  # Generate new data
-  ans$data = mvtnorm::rmvnorm(nrow(data), mean=rep(0,ncol(data)), ans$cov.mat)
-  return(ans)
 }
 
-
-
-
-make.df.of.changed.edges = function(mat1,mat2,colnam){
-  changes.ind = which(mat1!=0 & mat2 ==0,arr.ind=T)
-  changes= data.frame(as.character(colnam[changes.ind[,1]]),as.character(colnam[changes.ind[,2]]))
-  df=data.frame(t(apply(changes,1,sort)))
-  df = unique(df)
-  rownames(df) = 1:nrow(df)
-  colnames(df) = c('Gene1','Gene2')
-  return(df)
-}
-
-matrix.distance = function(mat1,mat2){
-  # Function for evaluating distance between two matrices. 
-  # Simplified: disregards the possibility of overlap. 
-  p = nrow(mat1)
-  mat1[which(abs(mat1)<10^(-4),arr.ind=T)] = 0 # Disregard almost-zero elements
-  mat2[which(abs(mat2)<10^(-4),arr.ind=T)] = 0 # Disregard almost-zero elements
-  m1 = cov2cor(as.matrix(forceSymmetric(mat1)))
-  m2 = cov2cor(as.matrix(forceSymmetric(mat2)))
-  observed.dist = sum(abs(abs(m1)-abs(m2)))
-  expected.dist = (sum(abs(m1))+sum(abs(m2))-2*p)
-  if(expected.dist==0) return(0)
-  else return(observed.dist/expected.dist)
-}

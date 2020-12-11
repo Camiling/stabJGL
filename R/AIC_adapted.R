@@ -1,4 +1,4 @@
-AIC.adapted = function(theta, sample.cov,n.vals) {
+AIC_adapted = function(theta, sample.cov,n.vals) {
   # theta is the list of estimated prec matrices
   # sample cov the list of sample cov matrices
   p = dim(sample.cov[[1]])[2]

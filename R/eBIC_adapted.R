@@ -1,4 +1,4 @@
-eBIC.adapted = function(theta, sample.cov,n.vals,gamma=0.2) {
+eBIC_adapted = function(theta, sample.cov,n.vals,gamma=0.2) {
   # theta: list of estimated precision matrices
   # sample cov: list of sample cov matrices
   # gamma: additional edge penalty parameter

@@ -11,7 +11,7 @@ JoStARS_select_lambda2_eBIC = function(Y,penalty="fused",rho=1,weights="equal",p
   for (i in 1:nlambda2){
     mods.lam2[[i]] = JGL(Y,penalty=penalty,rho=rho,lambda1=lambda1,lambda2 = lambda2.vals[i],penalize.diagonal = penalize.diagonal,
                          return.whole.theta = T,weights=weights)$theta
-    ebic.vals[i] = eBIC.adapted(mods.lam2[[i]],sample.cov=sample.cov,n.vals=n.vals,gamma=gamma)
+    ebic.vals[i] = eBIC_adapted(mods.lam2[[i]],sample.cov=sample.cov,n.vals=n.vals,gamma=gamma)
     if(verbose){
       done=round(100*i/nlambda2) # Print how far we have come when percentage is dividable by 5.
       if((done%%5) == 0) cat('Tuning lambda2: ', done, ' % done \n')      
