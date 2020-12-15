@@ -1,16 +1,36 @@
 Package: JoStARS
-Title: What the Package Does (One Line, Title Case)
+Title: Penalty selection in joint network analysis of multiple graphs with JoStARS
+Description: JoStARS performs penalty parameter selection in the joint graphical lasso, selecting both the sparsity- and the similarity controlling penalty parameters. 
+        The objective is to borrow strength across simialar classes to increase statistical power, 
+        while ensuring that the joint modelling may not decrease the accuracy of the resulting inferred graphs. 
+        The method takes a set of data matrices for which graphs are to be inferred with the joint graphical lasso. 
 Version: 0.0.0.9000
 Authors@R: 
-    person(given = "First",
-           family = "Last",
-           role = c("aut", "cre"),
-           email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to
-    pick a license
+    person("Camilla", "Lingjaerde", email = "camilla.lingjaerde@mrc-bsu.cam.ac.uk", role = c("cre", "aut"), comment = c(ORCID = "0000-0003-2701-5686"))
+URL: https://github.com/Camiling/JoStARS
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
+Language: en-US
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
+Depends: R (>= 3.5.0)
+Imports: 
+    stats,
+    Matrix,
+    remotes, 
+    JGL, 
+    foreach, 
+    doParallel
+Suggests:
+    igraph,
+    mvtnorm,
+    huge,
+    glasso,
+    knitr,
+    GGally,
+    network,
+    sna,
+    testthat,
+    covr
+VignetteBuilder: knitr

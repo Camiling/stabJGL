@@ -1,13 +1,107 @@
-# SHOULD BE RUN BEFORE OTHER SCRIPTS
-library(igraph)
-library(huge)
-library(glasso)
-library(MASS)
-library(mvtnorm)
-library(JGL)
-library(Matrix)
-library(foreach)
-library(doParallel)
+#' Calculate the adapted extended BIC (adapted eBIC) score of a set of estimated precision matrices
+#'
+#' Finds the adapted extended BIC (adapted eBIC) score of an estimated precision matrix given a sample covariance matrix, in the setting of Gaussian graphical model.
+#'
+#' @param theta The list of estimated precision matrices.
+#' @param sample.cov The list of sample covariance matrices of the different sets of observed data.
+#' @param n.vals  The number of observations in each class. A vector. 
+#' @param gamma  The value of the additional edge penalty parameter \eqn{\gamma} to use in the adapted eBIC. Default value is \eqn{0.2}.
+#'
+#' @seealso \code{\link{JoStARS}}
+#'
+#' @return The adapted eBIC score.
+#'
+#' @export
+#'
+#' @author Camilla Lingjaerde
+#'
+#' @examples
+#'
+#' # example 1: simple example where we check the adapted eBIC score of a set of the true precision matrices
+#' # generate data
+#' set.seed(123)
+#' n <- 80
+#' p <- 10
+#' dat1 <- huge::huge.generator(n = n, d = p, graph = "scale-free")
+#' dat2 <- huge::huge.generator(n = n, d = p, graph = "scale-free")
+#' cov.list = list(var(dat1$data), var(dat2$data))
+#' prec.mat1 <- dat1$omega # true precision matrix
+#' prec.mat2 <- dat2$omega # true precision matrix
+#' prec.mat.list = list(prec.mat1,prec.mat2)
+#' eBIC_adapted(cov.list, prec.mat.list, n.vals=c(n,n), gamma = 0.2)
+#' 
+eBIC_adapted = function(theta, sample.cov,n.vals,gamma=0.2) {
+  if(length(theta) != length(sample.cov)) stop('number of precision matrices must be the same as number of covariance matrices')
+  if (length(unique(c(unlist(lapply(theta, dim)),unlist(lapply(sample.cov, dim))))) !=1) stop("matrices must have the same dimension")
+  if (any(unlist(lapply(theta, det)) <= 0 )) stop("precision matrix must be positive definite in all classes.")
+  if(any(unlist(lapply(sample.cov, isSymmetric)) != TRUE )) stop("sample covariance matrix must be symmetric")
+  if (any(n.vals <= 0)) stop("number of observations n must be positive for all classes")
+  if (gamma < 0) stop("gamma cannot be negative in the adapted eBIC")
+  p = dim(sample.cov[[1]])[2]
+  K = length(sample.cov)
+  ebic.vals = rep(0,K)
+  # Start by finding eBIC score of each class
+  for(k in 1:length(theta))
+  {
+    theta.temp=theta[[k]]
+    diag(theta.temp) = rep(0,p) # Do not count diagonal
+    d=sum(theta.temp!=0)/2 # Number of edges
+    ebic.vals[k]=d*log(n.vals[k])+4*d*gamma*log(p)-n.vals[k]*log(det(theta[[k]]))+n.vals[k]*sum(diag(sample.cov[[k]]%*%theta[[k]]))
+  }
+  # Return combined eBIC score
+  return(sum(ebic.vals))
+}
+
+
+#' Calculate the adapted AIC score of a set of estimated precision matrices
+#'
+#' Finds the adapted AIC score of an estimated precision matrix given a sample covariance matrix, in the setting of Gaussian graphical model.
+#'
+#' @param theta The list of estimated precision matrices.
+#' @param sample.cov The list of sample covariance matrices of the different sets of observed data.
+#' @param n.vals  The number of observations in each class. A vector. 
+#'
+#' @seealso \code{\link{JoStARS}}
+#'
+#' @return The adapted AIC score.
+#'
+#' @export
+#'
+#' @author Camilla Lingjaerde
+#'
+#' @examples
+#'
+#' # example 1: simple example where we check the adapted AIC score of a set of the true precision matrices
+#' # generate data
+#' set.seed(123)
+#' n <- 80
+#' p <- 10
+#' dat1 <- huge::huge.generator(n = n, d = p, graph = "scale-free")
+#' dat2 <- huge::huge.generator(n = n, d = p, graph = "scale-free")
+#' cov.list = list(var(dat1$data), var(dat2$data))
+#' prec.mat1 <- dat1$omega # true precision matrix
+#' prec.mat2 <- dat2$omega # true precision matrix
+#' prec.mat.list = list(prec.mat1,prec.mat2)
+#' AIC_adapted(cov.list, prec.mat.list, n.vals=c(n,n))
+AIC_adapted = function(theta, sample.cov,n.vals) {
+  if(length(theta) != length(sample.cov)) stop('number of precision matrices must be the same as number of covariance matrices')
+  if (length(unique(c(unlist(lapply(theta, dim)),unlist(lapply(sample.cov, dim)))))!=1) stop("matrices must have the same dimension")
+  if (any(unlist(lapply(theta, det)) <= 0 )) stop("precision matrix must be positive definite in all classes")
+  if(any(unlist(lapply(sample.cov, isSymmetric)) != TRUE )) stop("sample covariance matrix must be symmetric")
+  if (any(n.vals <= 0)) stop("number of observations n must be positive for all classes")
+  p = dim(sample.cov[[1]])[2]
+  K = length(sample.cov)
+  aic.vals = rep(0,K)
+  for(k in 1:length(theta))
+  {
+    theta.temp=theta[[k]]
+    diag(theta.temp) = rep(0,p) # Do not count diagonal
+    d=sum(theta.temp!=0)/2 # Number of edges
+    aic.vals[k]  =  2*d - n.vals[k]*log(det(theta[[k]])) + n.vals[k]*sum(diag(sample.cov[[k]]%*%theta[[k]]))
+  }
+  return(sum(aic.vals))
+}
+
 
 #' Find the simplified matrix distance measure between two precision matrices.
 #'
@@ -17,7 +111,7 @@ library(doParallel)
 #'
 #' @param mat2 The second precision matrix. Assumed to be sparse.
 #'
-#' @seealso \code{\link{tailoredGlasso}}
+#' @seealso \code{\link{JoStARSo}}
 #'
 #'
 #' @return Numeric matrix distance.
@@ -69,7 +163,7 @@ matrix.distance <- function(mat1, mat2) {
 #' @param g The adjacency matrix of the graph.
 #'
 #'
-#' @seealso \code{\link{tailoredGlasso}} and \code{\link{confusion.matrix}}
+#' @seealso \code{\link{JoStARS}} and \code{\link{confusion.matrix}}
 #'
 #'
 #' @return Numeric sparsity.
@@ -109,7 +203,7 @@ sparsity <- function(g) {
 #' @param theta The estimated precision matrix.
 #' @param n  The number of observations.
 #'
-#' @seealso \code{\link{tailoredGlasso}}
+#' @seealso \code{\link{JoStARS}}
 #'
 #' @return Numerical value of the multivariate Gaussian profile log likelihood of the precision matrix.
 #'
@@ -147,7 +241,7 @@ gaussianloglik <- function(sample.cov, theta, n) {
 #' @param theta The estimated precision matrix.
 #' @param n  The number of observations.
 #'
-#' @seealso \code{\link{tailoredGlasso}}
+#' @seealso \code{\link{JoStARS}}
 #'
 #' @return The AIC score.
 #'
@@ -171,7 +265,7 @@ gaussianAIC <- function(sample.cov, theta, n) {
   theta2 <- theta
   diag(theta2) <- rep(0, p)
   d <- sum(theta2 != 0) / 2
-  return(-2 * tailoredGlasso::gaussianloglik(sample.cov, theta, n) + 2 * d)
+  return(-2 * gaussianloglik(sample.cov, theta, n) + 2 * d)
 }
 
 #' Calculate the extended BIC (eBIC) score of an estimated precision matrix
@@ -183,7 +277,7 @@ gaussianAIC <- function(sample.cov, theta, n) {
 #' @param n  The number of observations.
 #' @param gamma  The value of the additional edge penalty parameter \eqn{\gamma} to use in the eBIC. Default value is \eqn{0}.
 #'
-#' @seealso \code{\link{tailoredGlasso}}
+#' @seealso \code{\link{JoStARS}}
 #'
 #' @return The eBIC score.
 #'
@@ -225,7 +319,7 @@ eBIC <- function(sample.cov, theta, n, gamma = 0) {
 #'
 #' @param g.hat The adjacency matrix of the estimated graph.
 #'
-#' @seealso \code{\link{tailoredGlasso}}
+#' @seealso \code{\link{JoStARS}}
 #'
 #'
 #' @return The \eqn{2} by \eqn{2} confusion matrix. Element \code{[1,1]} is the number of true positives, element \code{[1,2]} the number of false positives, element  \code{[2,1]} the number of false negatives and  \code{[2,2]} the number of true negatives.
@@ -274,7 +368,7 @@ confusion.matrix <- function(g, g.hat) {
 #'
 #' @param g.hat The adjacency matrix of the estimated graph.
 #'
-#' @seealso \code{\link{tailoredGlasso}} and \code{\link{confusion.matrix}}
+#' @seealso \code{\link{JoStARS}} and \code{\link{confusion.matrix}}
 #'
 #'
 #' @return Numeric recall.
@@ -300,7 +394,7 @@ confusion.matrix <- function(g, g.hat) {
 #' recall(prec.mat.1 != 0, prec.mat.2 != 0)
 recall <- function(g, g.hat) {
   # use confusion.matrix to find FP, TP, TN and FN.
-  conf.mat <- tailoredGlasso::confusion.matrix(g, g.hat)
+  conf.mat <- confusion.matrix(g, g.hat)
   # check if there are no edges in g and hence no edges to predict. If so, we say the recall is one.
   if (conf.mat[1, 1] == 0 & conf.mat[2, 1] == 0) {
     return(1)
@@ -318,7 +412,7 @@ recall <- function(g, g.hat) {
 #'
 #' @param g.hat The adjacency matrix of the estimated graph.
 #'
-#' @seealso \code{\link{tailoredGlasso}} and \code{\link{confusion.matrix}}
+#' @seealso \code{\link{JoStARS}} and \code{\link{confusion.matrix}}
 #'
 #'
 #' @return Numeric precision.
@@ -345,7 +439,7 @@ recall <- function(g, g.hat) {
 #' precision(prec.mat.1 != 0, prec.mat.2 != 0)
 precision <- function(g, g.hat) {
   # use confusion.matrix to find FP, TP, TN and FN.
-  conf.mat <- tailoredGlasso::confusion.matrix(g, g.hat)
+  conf.mat <- confusion.matrix(g, g.hat)
   # check if there are no edges in g and hence no edges to predict. If so, we say the precision is one.
   if (conf.mat[1, 1] == 0 & conf.mat[2, 1] == 0) {
     return(1)
