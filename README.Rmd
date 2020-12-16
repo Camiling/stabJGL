@@ -14,6 +14,7 @@ knitr::opts_chunk$set(
     tidy = "styler"
 )
 library(JoStARS)
+library(foreach)
 ```
 
 
@@ -28,6 +29,8 @@ library(JoStARS)
 [![CRAN_Downloads_Badge](https://cranlogs.r-pkg.org/badges/grand-total/shapr)]---->
 <!--PAPER HERE [![DOI](https://joss.theoj.org/papers/10.21105/joss.02027/status.svg)]---->
 
+
+# `JoStARS`: penalty parameter selection in joint network inference
 
 
 The `JoStARS` package implements JoStARS for penalty parameter selection in joint network reconstruction of multiple graphs, in the setting of Gaussian graphical models. JoStARS performs penalty parameter selection in the joint graphical lasso of @danaher2014, selecting both the sparsity controlling and the between-graph similarity controlling penalty parameters. The objective is to borrow strength across similar classes to increase statistical power, while ensuring that the joint modelling may not decrease the accuracy of the resulting inferred graphs. The method takes a list of data matrices for which separate graphs are to be inferred, and selects the penalty parameters with a data-driven approach. The sparsity controlling parameter is selected based on graph stability (@liu2010stability), while the similarity controlling parameter is selected with a likelihood-based approach (@foygel2010extended). 
@@ -72,7 +75,7 @@ set.seed(123)
 n1 = 100 # let there be different number of samples in each data set
 n2 = 80 
 p <- 20
-dat <- huge::huge.generator(n = n, d = p, graph = "scale-free")
+dat <- huge::huge.generator(n = n1, d = p, graph = "scale-free")
 dat$sparsity # true sparsity level
 prec.mat <- dat$omega # the true precision matrix of both data sets
 x1 = MASS::mvrnorm(n1, mu=rep(0,p),Sigma=dat$sigma) # data set 1
