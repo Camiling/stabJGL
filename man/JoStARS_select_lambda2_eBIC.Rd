@@ -6,7 +6,6 @@
 \usage{
 JoStARS_select_lambda2_eBIC(
   Y,
-  penalty = "fused",
   rho = 1,
   weights = "equal",
   penalize.diagonal = FALSE,
@@ -14,8 +13,8 @@ JoStARS_select_lambda2_eBIC(
   lambda2.min,
   lambda2.max,
   lambda1 = NULL,
-  gamma = ebic.gamma,
-  verbose,
+  gamma = NULL,
+  verbose = F,
   parallelize = F,
   nCores = 4
 )

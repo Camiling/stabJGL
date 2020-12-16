@@ -23,7 +23,8 @@ Finds the adapted extended BIC (adapted eBIC) score of an estimated precision ma
 }
 \examples{
 
-# example 1: simple example where we check the adapted eBIC score of a set of the true precision matrices
+# example 1: simple example where we check the adapted eBIC
+#            score of a set of the true precision matrices
 # generate data
 set.seed(123)
 n <- 80

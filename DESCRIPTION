@@ -25,6 +25,7 @@ Imports:
 Suggests:
     igraph,
     mvtnorm,
+    MASS,
     huge,
     glasso,
     knitr,

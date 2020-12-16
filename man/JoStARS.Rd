@@ -2,11 +2,13 @@
 % Please edit documentation in R/JoStARS.R
 \name{JoStARS}
 \alias{JoStARS}
+\alias{jostars}
+\alias{Jostars}
+\alias{JoStars}
 \title{Perform JoStARS}
 \usage{
 JoStARS(
   Y,
-  penalty = "fused",
   scale = T,
   penalize.diagonal = FALSE,
   var.thresh = 0.1,
@@ -23,7 +25,7 @@ JoStARS(
   verbose = T,
   retune.lambda1 = F,
   parallelize = T,
-  nCores = 4,
+  nCores = 2,
   rho = 1,
   weights = "equal"
 )
@@ -43,6 +45,12 @@ JoStARS(
 
 \item{nlambda1}{The number of \eqn{\lambda_1} values to consider. The default value is \eqn{20}.}
 
+\item{lambda1.min}{The smallest value of \eqn{\lambda_1} to consider. The default value is \eqn{0.01}.}
+
+\item{lambda1.max}{The largest value of \eqn{\lambda_1} to consider. The default value is \eqn{0.01}.}
+
+\item{nlambda2}{The number of \eqn{\lambda_2} values to consider. The default value is \eqn{20}.}
+
 \item{lambda2.min}{The smallest value of \eqn{\lambda_2} to consider. The default value is \eqn{0}.}
 
 \item{lambda2.max}{The largest value of \eqn{\lambda_2} to consider. The default value is \eqn{0.1}.}
@@ -57,17 +65,11 @@ JoStARS(
 
 \item{parallelize}{Should the code be parallelized? The default value is \code{TRUE}.}
 
-\item{nCores}{If \code{parallelize=TRUE}, the number of threads to initialize. The default value is 4.}
+\item{nCores}{If \code{parallelize=TRUE}, the number of threads to initialize. The default value is 2.}
 
 \item{rho}{A step size parameter to use in the joint graphical lasso. Large values decrease step size. Default value is 1.}
 
 \item{weights}{Determines the putative sample size of each class's data in the joint graphical lasso. Allowed values; a vector with length equal to the number of classes; "\code{equal}", giving each class weight 1; "\code{sample.size}", giving each class weight corresponding to its sample size. The default value is "\code{equal}".}
-
-\item{lambda1.min=0.01}{The smallest value of \eqn{\lambda_1} to consider. The default value is \eqn{0.01}.}
-
-\item{lambda1.max=1}{The largest value of \eqn{\lambda_1} to consider. The default value is \eqn{0.01}.}
-
-\item{nlambda2=20}{The number of \eqn{\lambda_2} values to consider. The default value is \eqn{20}.}
 }
 \value{
 Object of class \code{"list"}. Contains the following items:
@@ -85,6 +87,7 @@ Object of class \code{"list"}. Contains the following items:
 \item{total.variability}{The total variability along the subsampling path when selecting \eqn{\lambda_1}. A vector of length \code{nlambda1}.}
 \item{variability}{The variability of each class along the subsampling path when selecting \eqn{\lambda_1}. A matrix of dimension \code{nlambda1} by \eqn{K}.}
 }
+}
 \description{
 Implements JoStARS for penalty selection in joint network reconstruction of multiple graphs. JoStARS performs penalty parameter selection in the joint graphical lasso, selecting both the sparsity- and the similarity controlling penalty parameters.
 }
@@ -95,7 +98,7 @@ The objective is to borrow strength across simialar classes to increase statisti
 
 # example 1: simple example where the data sets are from
 #            from completely different distributions
-#            and have no edges in their graph structure 
+#            and have no edges in their graph structure
 # generate data with independent variables
 set.seed(1234)
 x1 <- matrix(rnorm(5 * 20), ncol = 5)
@@ -130,7 +133,7 @@ precision(abs(dat$omega) > 1e-7, res$opt.fit[[1]] != 0)
 precision(abs(dat$omega) > 1e-7, res$opt.fit[[2]] != 0)
 
 # example 4: scale-free data where where the data sets are
-             from completely unrelated distributions
+#            from completely unrelated distributions
 # Create a completely unrelated prior data set
 set.seed(123)
 n1 <- 80
@@ -141,7 +144,7 @@ dat2 <- huge::huge.generator(n = n2, d = p, graph = "scale-free")
 x1 = MASS::mvrnorm(n1, mu=rep(0,p),Sigma=dat1$sigma)
 x2 = MASS::mvrnorm(n2, mu=rep(0,p),Sigma=dat2$sigma)
 Y = list(x1, x2)
-res <- JoStARS(Y, scale=T,lambda2.max=0.3)
+res <- JoStARS(Y, scale=TRUE,lambda2.max=0.3)
 res$opt.lambda1 # the optimal selected value of lambda1
 res$opt.lambda2 # the optimal selected value of lambda2
 res$opt.sparsities # the sparsity of the estimated precision matrices
@@ -152,7 +155,7 @@ precision(abs(dat2$omega) > 1e-7, res$opt.fit[[2]] != 0)
 
 }
 \seealso{
-\code{\link[huge]{JGL}}
+\code{\link[JGL]{JGL}}
 }
 \author{
 Camilla Lingjaerde

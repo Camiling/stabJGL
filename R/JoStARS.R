@@ -1,9 +1,10 @@
 #' Perform JoStARS
 #'
-#' Implements JoStARS for penalty selection in joint network reconstruction of multiple graphs. JoStARS performs penalty parameter selection in the joint graphical lasso, selecting both the sparsity- and the similarity controlling penalty parameters.
+#' @description  Implements JoStARS for penalty selection in joint network reconstruction of multiple graphs. JoStARS performs penalty parameter selection in the joint graphical lasso, selecting both the sparsity- and the similarity controlling penalty parameters.
 #'
-#' The objective is to borrow strength across simialar classes to increase statistical power, while ensuring that the joint modelling may not decrease the accuracy of the resulting inferred graphs. The method takes a set of data matrices for which graphs are to be inferred with the joint graphical lasso. The method takes a list \code{Y} of \eqn{K} data matrices for which separate graphs are to be inferred, selects the sparsity controlling penalty parameter \eqn{\lambda_1} and similarity controlling penalty parameter \eqn{\lambda_2}, and performs the joint graphical lasso, resulting in \eqn{K} precision matrix estimates. To increase computational efficiency, the code can be run in parallel with \code{nCores} threads.
+#' @details The objective is to borrow strength across simialar classes to increase statistical power, while ensuring that the joint modelling may not decrease the accuracy of the resulting inferred graphs. The method takes a set of data matrices for which graphs are to be inferred with the joint graphical lasso. The method takes a list \code{Y} of \eqn{K} data matrices for which separate graphs are to be inferred, selects the sparsity controlling penalty parameter \eqn{\lambda_1} and similarity controlling penalty parameter \eqn{\lambda_2}, and performs the joint graphical lasso, resulting in \eqn{K} precision matrix estimates. To increase computational efficiency, the code can be run in parallel with \code{nCores} threads.
 #'
+#' @aliases jostars Jostars JoStars
 #'
 #' @param Y A list of \eqn{K} data matrices, each of dimension \eqn{n_k} by \eqn{p} where \eqn{n_k} is the sample size of class \eqn{K} and \eqn{p} is the dimension.
 #'
@@ -19,11 +20,11 @@
 #'
 #' @param nlambda1 The number of \eqn{\lambda_1} values to consider. The default value is \eqn{20}.
 #'
-#' @param lambda1.min=0.01 The smallest value of \eqn{\lambda_1} to consider. The default value is \eqn{0.01}.
+#' @param lambda1.min The smallest value of \eqn{\lambda_1} to consider. The default value is \eqn{0.01}.
 #'
-#' @param lambda1.max=1 The largest value of \eqn{\lambda_1} to consider. The default value is \eqn{0.01}.
+#' @param lambda1.max The largest value of \eqn{\lambda_1} to consider. The default value is \eqn{0.01}.
 #'
-#' @param nlambda2=20 The number of \eqn{\lambda_2} values to consider. The default value is \eqn{20}.
+#' @param nlambda2 The number of \eqn{\lambda_2} values to consider. The default value is \eqn{20}.
 #'
 #' @param lambda2.min The smallest value of \eqn{\lambda_2} to consider. The default value is \eqn{0}.
 #'
@@ -39,7 +40,7 @@
 #'
 #' @param parallelize Should the code be parallelized? The default value is \code{TRUE}.
 #'
-#' @param nCores If \code{parallelize=TRUE}, the number of threads to initialize. The default value is 4.
+#' @param nCores If \code{parallelize=TRUE}, the number of threads to initialize. The default value is 2.
 #'
 #' @param rho A step size parameter to use in the joint graphical lasso. Large values decrease step size. Default value is 1.
 #'
@@ -60,10 +61,12 @@
 #'   \item{opt.sparsities.lambda1}{The sparsities of the graphs found after selecting \eqn{\lambda_1} while \eqn{\lambda_2} is fixed to its initial value. A vector of length \eqn{K}.}
 #'   \item{total.variability}{The total variability along the subsampling path when selecting \eqn{\lambda_1}. A vector of length \code{nlambda1}.}
 #'   \item{variability}{The variability of each class along the subsampling path when selecting \eqn{\lambda_1}. A matrix of dimension \code{nlambda1} by \eqn{K}.}
+#'   }
 #'
 #'
+#' @importFrom foreach %dopar%
 #'
-#' @seealso \code{\link[huge]{JGL}}
+#' @seealso \code{\link[JGL]{JGL}}
 #'
 #' @export
 #'
@@ -110,7 +113,7 @@
 #' precision(abs(dat$omega) > 1e-7, res$opt.fit[[2]] != 0)
 #'
 #' # example 4: scale-free data where where the data sets are
-#'              from completely unrelated distributions
+#' #            from completely unrelated distributions
 #' # Create a completely unrelated prior data set
 #' set.seed(123)
 #' n1 <- 80
@@ -121,7 +124,7 @@
 #' x1 = MASS::mvrnorm(n1, mu=rep(0,p),Sigma=dat1$sigma)
 #' x2 = MASS::mvrnorm(n2, mu=rep(0,p),Sigma=dat2$sigma)
 #' Y = list(x1, x2)
-#' res <- JoStARS(Y, scale=T,lambda2.max=0.3)
+#' res <- JoStARS(Y, scale=TRUE,lambda2.max=0.3)
 #' res$opt.lambda1 # the optimal selected value of lambda1
 #' res$opt.lambda2 # the optimal selected value of lambda2
 #' res$opt.sparsities # the sparsity of the estimated precision matrices
@@ -130,9 +133,9 @@
 #' precision(abs(dat2$omega) > 1e-7, res$opt.fit[[2]] != 0)
 #'
 #'
-JoStARS = function(Y,penalty="fused",scale=T,penalize.diagonal=FALSE,var.thresh = 0.1, subsample.ratio = NULL,
+JoStARS = function(Y,scale=T,penalize.diagonal=FALSE,var.thresh = 0.1, subsample.ratio = NULL,
                    rep.num = 20,  nlambda1=20,lambda1.min=0.01,lambda1.max=1,nlambda2=20,lambda2.min=0,lambda2.max=0.1,lambda2.init=0.01,
-                   ebic.gamma=0.2,verbose=T, retune.lambda1=F,parallelize=T,nCores=4,rho=1,weights="equal"){
+                   ebic.gamma=0.2,verbose=T, retune.lambda1=F,parallelize=T,nCores=2,rho=1,weights="equal"){
 
   if (length(unique(unlist(lapply(Y, ncol)))) !=1) {
     stop("dimension (no of variables) not equal for all data sets.")
@@ -166,11 +169,11 @@ JoStARS = function(Y,penalty="fused",scale=T,penalize.diagonal=FALSE,var.thresh 
   est = list()
   if (scale) Y=lapply(Y,scale)
   # Start by selecting lambda1 while fixing lambda2 to its initial value
-  est.lambda1 = JoStARS_select_lambda1(Y,penalty=penalty,rho=rho,weights=weights, penalize.diagonal=penalize.diagonal, stars.thresh=var.thresh,
+  est.lambda1 = JoStARS_select_lambda1(Y,rho=rho,weights=weights, penalize.diagonal=penalize.diagonal, stars.thresh=var.thresh,
                                    stars.subsample.ratio=subsample.ratio, rep.num=rep.num,nlambda1=nlambda1,lambda1.min=lambda1.min,
                                    lambda1.max=lambda1.max, lambda2=lambda2.init,verbose=verbose,parallelize=parallelize,nCores=nCores)
   # Select lambda2
-  est.lambda2 = JoStARS_select_lambda2_eBIC(Y,penalty=penalty,rho=rho,weights=weights,penalize.diagonal=penalize.diagonal,
+  est.lambda2 = JoStARS_select_lambda2_eBIC(Y,rho=rho,weights=weights,penalize.diagonal=penalize.diagonal,
                                         nlambda2=nlambda2,lambda2.min=lambda2.min,lambda2.max=lambda2.max,
                                         lambda1=est.lambda1$opt.lambda1,gamma=ebic.gamma,verbose=verbose,parallelize=parallelize,
                                         nCores=nCores)
@@ -182,7 +185,7 @@ JoStARS = function(Y,penalty="fused",scale=T,penalize.diagonal=FALSE,var.thresh 
   est$opt.sparsities = est.lambda2$opt.sparsities
   # If lambda1 should be retuned, select it while fixing lambda2
   if(retune.lambda1){
-    est.lambda1 = JoStARS_select_lambda1(Y,penalty=penalty,rho=rho,weights=weights, penalize.diagonal=penalize.diagonal, stars.thresh=var.thresh,
+    est.lambda1 = JoStARS_select_lambda1(Y,rho=rho,weights=weights, penalize.diagonal=penalize.diagonal, stars.thresh=var.thresh,
                                      stars.subsample.ratio=subsample.ratio, rep.num=rep.num,nlambda1=nlambda1,lambda1.min=lambda1.min,
                                      lambda1.max=lambda1.max, lambda2=est.lambda2$opt.lambda2,verbose=verbose,parallelize=parallelize,nCores=nCores)
     est$opt.fit = est.lambda1$opt.fit
@@ -204,7 +207,7 @@ JoStARS = function(Y,penalty="fused",scale=T,penalize.diagonal=FALSE,var.thresh 
 #' Internal function for selecting lambda1 in JoStARS
 #'
 #' @keywords internal
-JoStARS_select_lambda1 = function(Y,penalty="fused",rho=1,weights="equal",penalize.diagonal=FALSE,stars.thresh = 0.1, stars.subsample.ratio = NULL,rep.num = 20,
+JoStARS_select_lambda1 = function(Y,rho=1,weights="equal",penalize.diagonal=FALSE,stars.thresh = 0.1, stars.subsample.ratio = NULL,rep.num = 20,
                                   nlambda1=20,lambda1.min,lambda1.max, lambda2,verbose,parallelize=F,nCores=4){
   K = length(Y)
   n.vals = unlist(lapply(Y,nrow))
@@ -249,7 +252,7 @@ JoStARS_select_lambda1 = function(Y,penalty="fused",rho=1,weights="equal",penali
       for(j in 1:nlambda1)
       {
         lambda = lambda1s[j]
-        tmp = JGL::JGL(Y.sample,penalty,rho=rho,lambda1=lambda,lambda2=lambda2,return.whole.theta=T,penalize.diagonal = penalize.diagonal)$theta
+        tmp = JGL::JGL(Y.sample,penalty='fused',rho=rho,lambda1=lambda,lambda2=lambda2,return.whole.theta=T,penalize.diagonal = penalize.diagonal)$theta
         # tmp is a K-length list of estimated precision matrices
 
         # Add up estimated adjacency matrices to find out how many of the graphs that agree on each edge.
@@ -267,15 +270,14 @@ JoStARS_select_lambda1 = function(Y,penalty="fused",rho=1,weights="equal",penali
         done.next <- round(100 * (i + 1) / rep.num)
         if (i == rep.num | (done %% 5) == 0 & (done.next %% 5) != 0) cat('Tuning lambda1: ', done, ' % done \n')
       }
-      flush.console()
     }
   }
   # Parallelized analysis, drawing and analysing each subsample using threads
   else{
     doParallel::registerDoParallel(nCores)
-    res.list = foreach::foreach(i=1:rep.num)  %dopar% {
+    res.list = foreach::foreach(i=1:rep.num) %dopar% {
       JoStARS_select_lambda1_parallel(Y,rep.num=rep.num,rho=rho,n.vals=n.vals,stars.subsample.ratios=stars.subsample.ratios,
-                                      penalty=penalty,lambda1s=lambda1s,lambda2=lambda2,penalize.diagonal = penalize.diagonal,
+                                      lambda1s=lambda1s,lambda2=lambda2,penalize.diagonal = penalize.diagonal,
                                       seed=seeds[i], array.list=est$merge)
     }
     foreach::registerDoSEQ()
@@ -304,7 +306,7 @@ JoStARS_select_lambda1 = function(Y,penalty="fused",rho=1,weights="equal",penali
   est$opt.index = max(which.max(est$total.variability >= stars.thresh)[1]-1,1)
   est$opt.lambda1 = est$lambda1s[est$opt.index]
   # Use selected lambda1 to get optimal fit
-  est$opt.fit = JGL::JGL(Y,penalty,rho=rho,lambda1=est$opt.lambda1,lambda2=lambda2,return.whole.theta=T,penalize.diagonal=penalize.diagonal)$theta # Optimal fit.
+  est$opt.fit = JGL::JGL(Y,penalty='fused',rho=rho,lambda1=est$opt.lambda1,lambda2=lambda2,return.whole.theta=T,penalize.diagonal=penalize.diagonal)$theta # Optimal fit.
   est$opt.sparsities = unlist(lapply(est$opt.fit,sparsity))
   return(est)
 
@@ -314,7 +316,7 @@ JoStARS_select_lambda1 = function(Y,penalty="fused",rho=1,weights="equal",penali
 #'
 #' @keywords internal
 JoStARS_select_lambda1_parallel = function(Y,rep.num,rho,n.vals,stars.subsample.ratios,
-                                           penalty,lambda1s,lambda2,penalize.diagonal,
+                                           lambda1s,lambda2,penalize.diagonal,
                                            seed,array.list)
   {
   # This function draws one subsample and performs JGL on it with each lambda1 value to consider
@@ -332,7 +334,7 @@ JoStARS_select_lambda1_parallel = function(Y,rep.num,rho,n.vals,stars.subsample.
   for(j in 1:length(lambda1s))
   {
     lambda = lambda1s[j]
-    tmp = JGL::JGL(Y.sample,penalty,rho=rho,lambda1=lambda,lambda2=lambda2,return.whole.theta=T,penalize.diagonal = penalize.diagonal)$theta
+    tmp = JGL::JGL(Y.sample,penalty='fused',rho=rho,lambda1=lambda,lambda2=lambda2,return.whole.theta=T,penalize.diagonal = penalize.diagonal)$theta
 
     # Save adjacency matrix
     for (k in 1:K){
@@ -347,20 +349,21 @@ JoStARS_select_lambda1_parallel = function(Y,rep.num,rho,n.vals,stars.subsample.
 
 #' Internal function for selecting lambda2 in JoStARS
 #'
+#'
 #' @keywords internal
-JoStARS_select_lambda2_eBIC = function(Y,penalty="fused",rho=1,weights="equal",penalize.diagonal=FALSE,
-                                       nlambda2=30,lambda2.min,lambda2.max, lambda1=NULL,gamma=ebic.gamma,verbose,
+JoStARS_select_lambda2_eBIC = function(Y,rho=1,weights="equal",penalize.diagonal=FALSE,
+                                       nlambda2=30,lambda2.min,lambda2.max, lambda1=NULL,gamma=NULL,verbose=F,
                                        parallelize=F,nCores=4){
   # Select lambda_2 by eBIC
   ebic.vals = rep(0,nlambda2)
   lambda2.vals = seq(lambda2.min,lambda2.max,length.out= nlambda2)
   n.vals = unlist(lapply(Y,nrow))
-  sample.cov = lapply(Y,cov)
+  sample.cov = lapply(Y,FUN = function(s) stats::cov(s))
   mods.lam2=list()
   if(verbose) cat('Tuning lambda2...\n')
   # For each lambda2 value, fit a JGL model
   for (i in 1:nlambda2){
-    mods.lam2[[i]] = JGL::JGL(Y,penalty=penalty,rho=rho,lambda1=lambda1,lambda2 = lambda2.vals[i],penalize.diagonal = penalize.diagonal,
+    mods.lam2[[i]] = JGL::JGL(Y,penalty='fused',rho=rho,lambda1=lambda1,lambda2 = lambda2.vals[i],penalize.diagonal = penalize.diagonal,
                               return.whole.theta = T,weights=weights)$theta
     # Find the eBIC score for the resultign precision matrix estimate.
     ebic.vals[i] = eBIC_adapted(mods.lam2[[i]],sample.cov=sample.cov,n.vals=n.vals,gamma=gamma)
@@ -371,8 +374,6 @@ JoStARS_select_lambda2_eBIC = function(Y,penalty="fused",rho=1,weights="equal",p
       done.next <- round(100 * (i + 1) / nlambda2)
       if (i == nlambda2| (done %% 5) == 0 & (done.next %% 5) != 0) cat('Tuning lambda2: ', done, ' % done \n')
     }
-    # Clear memory
-    flush.console()
   }
   opt.ind = which.min(ebic.vals)
   # Resturn list where mod.opt is the optimal JGL object

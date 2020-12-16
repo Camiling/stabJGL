@@ -4,7 +4,7 @@
 #'
 #' @param theta The list of estimated precision matrices.
 #' @param sample.cov The list of sample covariance matrices of the different sets of observed data.
-#' @param n.vals  The number of observations in each class. A vector. 
+#' @param n.vals  The number of observations in each class. A vector.
 #' @param gamma  The value of the additional edge penalty parameter \eqn{\gamma} to use in the adapted eBIC. Default value is \eqn{0.2}.
 #'
 #' @seealso \code{\link{JoStARS}}
@@ -17,7 +17,8 @@
 #'
 #' @examples
 #'
-#' # example 1: simple example where we check the adapted eBIC score of a set of the true precision matrices
+#' # example 1: simple example where we check the adapted eBIC
+#' #            score of a set of the true precision matrices
 #' # generate data
 #' set.seed(123)
 #' n <- 80
@@ -29,7 +30,7 @@
 #' prec.mat2 <- dat2$omega # true precision matrix
 #' prec.mat.list = list(prec.mat1,prec.mat2)
 #' eBIC_adapted(cov.list, prec.mat.list, n.vals=c(n,n), gamma = 0.2)
-#' 
+#'
 eBIC_adapted = function(theta, sample.cov,n.vals,gamma=0.2) {
   if(length(theta) != length(sample.cov)) stop('number of precision matrices must be the same as number of covariance matrices')
   if (length(unique(c(unlist(lapply(theta, dim)),unlist(lapply(sample.cov, dim))))) !=1) stop("matrices must have the same dimension")
@@ -59,7 +60,7 @@ eBIC_adapted = function(theta, sample.cov,n.vals,gamma=0.2) {
 #'
 #' @param theta The list of estimated precision matrices.
 #' @param sample.cov The list of sample covariance matrices of the different sets of observed data.
-#' @param n.vals  The number of observations in each class. A vector. 
+#' @param n.vals  The number of observations in each class. A vector.
 #'
 #' @seealso \code{\link{JoStARS}}
 #'
@@ -71,7 +72,8 @@ eBIC_adapted = function(theta, sample.cov,n.vals,gamma=0.2) {
 #'
 #' @examples
 #'
-#' # example 1: simple example where we check the adapted AIC score of a set of the true precision matrices
+#' # example 1: simple example where we check the adapted AIC score
+#' #            of a set of the true precision matrices
 #' # generate data
 #' set.seed(123)
 #' n <- 80
@@ -111,7 +113,7 @@ AIC_adapted = function(theta, sample.cov,n.vals) {
 #'
 #' @param mat2 The second precision matrix. Assumed to be sparse.
 #'
-#' @seealso \code{\link{JoStARSo}}
+#' @seealso \code{\link{JoStARS}}
 #'
 #'
 #' @return Numeric matrix distance.
@@ -135,7 +137,7 @@ AIC_adapted = function(theta, sample.cov,n.vals) {
 #' # make them sparse by threshold values. Do not make diagonal elements zero.
 #' prec.mat.1[which(abs(prec.mat.1) < 1.5 & !diag(ncol(prec.mat.1)))] <- 0
 #' prec.mat.2[which(abs(prec.mat.2) < 1.5 & !diag(ncol(prec.mat.2)))] <- 0
-#' matrix.distance.simple(prec.mat.1, prec.mat.2)
+#' matrix.distance(prec.mat.1, prec.mat.2)
 matrix.distance <- function(mat1, mat2) {
   p <- nrow(mat1)
   if (mean(dim(mat1) == dim(mat2)) != 1) stop("matrices must have the same dimension")

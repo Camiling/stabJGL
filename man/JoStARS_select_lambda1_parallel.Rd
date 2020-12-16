@@ -10,7 +10,6 @@ JoStARS_select_lambda1_parallel(
   rho,
   n.vals,
   stars.subsample.ratios,
-  penalty,
   lambda1s,
   lambda2,
   penalize.diagonal,

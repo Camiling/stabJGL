@@ -6,7 +6,6 @@
 \usage{
 JoStARS_select_lambda1(
   Y,
-  penalty = "fused",
   rho = 1,
   weights = "equal",
   penalize.diagonal = FALSE,

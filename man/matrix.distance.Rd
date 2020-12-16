@@ -30,10 +30,10 @@ prec.mat.2 <- solve(var(x2))
 # make them sparse by threshold values. Do not make diagonal elements zero.
 prec.mat.1[which(abs(prec.mat.1) < 1.5 & !diag(ncol(prec.mat.1)))] <- 0
 prec.mat.2[which(abs(prec.mat.2) < 1.5 & !diag(ncol(prec.mat.2)))] <- 0
-matrix.distance.simple(prec.mat.1, prec.mat.2)
+matrix.distance(prec.mat.1, prec.mat.2)
 }
 \seealso{
-\code{\link{JoStARSo}}
+\code{\link{JoStARS}}
 }
 \author{
 Camilla Lingjaerde

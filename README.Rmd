@@ -66,8 +66,7 @@ The main function `JoStARS` takes a list of $K$ data matrices, each of dimension
 
 The following examples show how `JoStARS` selects how strongly similarity should be enforced for a set of $K=2$ graph, as well as determine the sparsity level, and returns the resulting precision matrix estimates. One example with $K=2$ data sets drawn from the same distribution, and one with $K=2$ data sets drawn from completely unrelated distributions, is shown. In the fist case, $\lambda_2$ is selected to be larger than zero, hence encouraging similarity. This results in high precision considering the high dimensionality of the problem. In the latter case, $\lambda_2$ is selected to be exactly zero and no similarity between the two graphs is encouraged. 
 
-The data is generated using the R package `huge` (@huge), as it includes functionality for generating data from a Gaussian graphical model. The networks we generate are *scale-free*, which is a known trait in many real-life networks such as genomic networks (@kolaczyk09). 
-
+The data is generated using the R package `huge` (@huge), as it includes functionality for generating data from a Gaussian graphical model. The networks we generate are *scale-free*, which is a known trait in many real-life networks such as genomic networks (@kolaczyk09).
 
 ```{r, warning = FALSE}
 #  example 1: scale-free data where the data sets are from the same distribution

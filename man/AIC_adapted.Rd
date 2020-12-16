@@ -21,7 +21,8 @@ Finds the adapted AIC score of an estimated precision matrix given a sample cova
 }
 \examples{
 
-# example 1: simple example where we check the adapted AIC score of a set of the true precision matrices
+# example 1: simple example where we check the adapted AIC score
+#            of a set of the true precision matrices
 # generate data
 set.seed(123)
 n <- 80
