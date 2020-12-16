@@ -32,5 +32,6 @@ Suggests:
     network,
     sna,
     testthat,
-    covr
+    covr, 
+    ggpubr
 VignetteBuilder: knitr

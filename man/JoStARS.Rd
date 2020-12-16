@@ -86,10 +86,10 @@ Object of class \code{"list"}. Contains the following items:
 \item{variability}{The variability of each class along the subsampling path when selecting \eqn{\lambda_1}. A matrix of dimension \code{nlambda1} by \eqn{K}.}
 }
 \description{
-Implements JoStARS for penalty selection in joint network analysis of multiple graphs. JoStARS performs penalty parameter selection in the joint graphical lasso, selecting both the sparsity- and the similarity controlling penalty parameters.
+Implements JoStARS for penalty selection in joint network reconstruction of multiple graphs. JoStARS performs penalty parameter selection in the joint graphical lasso, selecting both the sparsity- and the similarity controlling penalty parameters.
 }
 \details{
-The objective is to borrow strength across simialar classes to increase statistical power, while ensuring that the joint modelling may not decrease the accuracy of the resulting inferred graphs. The method takes a set of data matrices for which graphs are to be inferred with the joint graphical lasso. The method takes a list \code{Y} of \eqn{K} data matrices for which separate graphs are to be inferred, selects the sparsity controlling penalty parameter \eqn{\lambda_1} and similarity controlling penalty parameter \eqn{\lambda_2} and performs the joint graphical lasso, resulting in \eqn{K} precision matrix estimates. To increase computational efficiency, the code can be run in parallel with \code{nCores} threads.
+The objective is to borrow strength across simialar classes to increase statistical power, while ensuring that the joint modelling may not decrease the accuracy of the resulting inferred graphs. The method takes a set of data matrices for which graphs are to be inferred with the joint graphical lasso. The method takes a list \code{Y} of \eqn{K} data matrices for which separate graphs are to be inferred, selects the sparsity controlling penalty parameter \eqn{\lambda_1} and similarity controlling penalty parameter \eqn{\lambda_2}, and performs the joint graphical lasso, resulting in \eqn{K} precision matrix estimates. To increase computational efficiency, the code can be run in parallel with \code{nCores} threads.
 }
 \examples{
 
