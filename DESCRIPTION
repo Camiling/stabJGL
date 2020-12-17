@@ -21,7 +21,8 @@ Imports:
     remotes, 
     JGL, 
     foreach, 
-    doParallel
+    doParallel, 
+    parallel
 Suggests:
     igraph,
     mvtnorm,

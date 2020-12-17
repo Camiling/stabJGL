@@ -285,13 +285,17 @@ JoStARS_select_lambda1 = function(Y,rho=1,weights="equal",penalize.diagonal=FALS
   }
   # Parallelized analysis, drawing and analysing each subsample using threads
   else{
-    doParallel::registerDoParallel(nCores)
+    #doParallel::registerDoParallel(nCores)
+    cl <- parallel::makeCluster(nCores)
+    doParallel::registerDoParallel(cl)
     res.list = foreach::foreach(i=1:rep.num) %dopar% {
       JoStARS_select_lambda1_parallel(Y,rep.num=rep.num,rho=rho,n.vals=n.vals,stars.subsample.ratios=stars.subsample.ratios,
                                       lambda1s=lambda1s,lambda2=lambda2,penalize.diagonal = penalize.diagonal,
                                       seed=seeds[i], array.list=est$merge)
     }
-    foreach::registerDoSEQ()
+    parallel::stopCluster(cl)
+    #doParallel::stopImplicitCluster()
+    #foreach::registerDoSEQ()
     # Collapse results, adding up estimated adjacency matrices to find out how many of the graphs that agree on each edge.
     for(j in 1:length(lambda1s)){
       for(k in 1:K){
