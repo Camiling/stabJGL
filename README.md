@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 <!-- badges: start -->
-[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/#experimental) [![codecov](https://codecov.io/gh/Camiling/JoStARS/branch/master/graph/badge.svg?token=ZGD1X88OEA)](https://codecov.io/gh/Camiling/JoStARS) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![R build status](https://github.com/Camiling/JoStARS/workflows/R-CMD-check/badge.svg)](https://github.com/Camiling/JoStARS/actions) <!-- badges: end -->
+[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/#experimental) [![codecov](https://codecov.io/gh/Camiling/JoStARS/branch/main/graph/badge.svg?token=QL5ZW3RQZD)](https://codecov.io/gh/Camiling/JoStARS) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![R build status](https://github.com/Camiling/JoStARS/workflows/R-CMD-check/badge.svg)](https://github.com/Camiling/JoStARS/actions) <!-- badges: end -->
 
 <!-- IF ON CRAN [![CRAN_Status_Badge](https://www.r-pkg.org/badges/version-last-release/shapr)]
 [![CRAN_Downloads_Badge](https://cranlogs.r-pkg.org/badges/grand-total/shapr)]---->
