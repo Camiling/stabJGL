@@ -107,7 +107,7 @@ Due to the high-dimensional problem frequently encountered in real-life data, wh
 
 The *sparsity* of a graph is the number of edges divided by the maximal number of edges the graph can have. If the sparsity of a graph is sufficiently small, $\boldsymbol{\Theta}$ has enough zero elements to be of full rank and thus invertible and well defined. We then say that the graph, or precision matrix, is sparse.
 
-The graphical lasso performs sparse precision matrix estimation by imposing an $L_1$ penalty on the matrix entries (@Friedman08). The graphical lasso aims to solve the penalized log-likelihood problem
+The graphical lasso performs sparse precision matrix estimation by imposing an $L_1$ penalty on the matrix entries (@friedman08). The graphical lasso aims to solve the penalized log-likelihood problem
 
 $$
  \widehat{\boldsymbol{\Theta}} = \text{argmax}_{\boldsymbol{\Theta} \succ 0} \Big \{\log (\det\boldsymbol{\Theta}) - \text{tr} (\boldsymbol{S} \boldsymbol{\Theta}) - \lambda \| \boldsymbol{\Theta }\|_1 \Big \}, 
@@ -160,7 +160,7 @@ JoStARS starts by selecting $\lambda_1$, fixing $\lambda_2$ to a small value suc
 
 In JoStARS, $\lambda_1$ is selected by conducting many subsamplings and estimating the graph *variability*. For each value of $\lambda_1$ to consider, joint graphical lasso graphs are estimated for each set of sampled data, and the variability of each edge within each of the $K$ graph classes is measured. This edge variability is measured by estimating the variance of the binomial indicator of the event that two subsample graphs will agree on the edge. The variability of each graph is then measured as the average edge variability. Finally, the total variability of the set of joint graphical lasso graphs is measured as the average variability across all $K$ classes. This results in a variability estimate for each value of $\lambda_1$ to consider. 
 
-The smallest value of $\lambda_1$ whose resulting variability measure that does not exceed a predefined threshold $\beta_1$ is then selected. A threshold of $\beta_1=0.1$ is proposed, as suggested by (\citeauthor@liu2010stability) in the ordinary StARS algorithm. This threshold has a nice interpretability, as it means that up to $10\%$ instability, i.e. wrongful edge edge assignments in the graph, is accepted.
+The smallest value of $\lambda_1$ whose resulting variability measure that does not exceed a predefined threshold $\beta_1$ is then selected. A threshold of $\beta_1=0.1$ is proposed, as suggested by (@liu2010stability) in the ordinary StARS algorithm. This threshold has a nice interpretability, as it means that up to $10\%$ instability, i.e. wrongful edge edge assignments in the graph, is accepted.
 
 
 ## Selecting $\lambda_2$
@@ -187,7 +187,7 @@ For several classes of data with similar underlying graph structures, the joint 
 
 By selecting the sparsity-controlling parameter $\lambda_1$ based on within-graph stability under subsamplings, JoStARS avoids the problem of severe over- or under-selection of edges commonly associated with AIC based sparsity selection (@liu2010stability, @foygel2010extended). Since the similarity controlling parameter $\lambda_2$ is chosen with a penalised likelihood-based approach constructed for high-dimensional cases, JoStARS enforces as much similarity as is supported by the data while avoiding a favouring of large graphs. This way, too strong similarity encouragement that might negatively affect the model fit is avoided. In other words, there is much to gain yet little to lose by using JoStARS to select the parameters. 
 
-Additionally, JoStARS also has a convenient interpretability through the selected value of $\lambda_2$, providing a ``similarity score'' for the classes of data. A chosen value close to zero indicates no similarity while a larger value indicates that encouraging similarity between their graphs improves the inference. 
+Additionally, JoStARS also has a convenient interpretability through the selected value of $\lambda_2$, providing a *similarity score* for the classes of data. A chosen value close to zero indicates no similarity while a larger value indicates that encouraging similarity between their graphs improves the inference. 
 
 
 

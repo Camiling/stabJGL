@@ -164,7 +164,12 @@ JoStARS = function(Y,scale=T,penalize.diagonal=FALSE,var.thresh = 0.1, subsample
   if (parallelize) {
     if(nCores < 2) stop("if method is to be run in parallel, at least two threads should be initiated. Try nCores=2. \n")
   }
-
+  if (rho <= 0) {
+    stop("step size rho must be positive. \n")
+  }
+  if (rep.num < 1) {
+    stop("Number of subsamplings must be positive. \n")
+  }
 
   est = list()
   if (scale) Y=lapply(Y,scale)
@@ -225,6 +230,12 @@ JoStARS_select_lambda1 = function(Y,rho=1,weights="equal",penalize.diagonal=FALS
     for(k in 1:K){
       if(n.vals[k]>144) stars.subsample.ratios[k] = 10*sqrt(n.vals[k])/n.vals[k]
       if(n.vals[k]<=144) stars.subsample.ratios[k] = 0.8
+    }
+  }
+  # If a single subsample ratio is provided, make a vector of the value
+  else {
+    if(length(stars.subsample.ratio)<=1){
+      stars.subsample.ratios = rep(stars.subsample.ratio,K)
     }
   }
   est = list()
