@@ -114,11 +114,11 @@ The resulting JoStARS graphs can be visualised with functions from the `network`
 set.seed(1234)
 net1 <- network::network(adj.mat1)
 net2 <- network::network(adj.mat2)
-g1 <- GGally::ggnet2(net1, alpha = 0.9, color = "deepskyblue2")
+g1 <- GGally::ggnet2(net1, alpha = 0.9, color = "darkorange")
 #> Registered S3 method overwritten by 'GGally':
 #>   method from   
 #>   +.gg   ggplot2
-g2 <- GGally::ggnet2(net2, alpha = 0.9, color = "deepskyblue2")
+g2 <- GGally::ggnet2(net2, alpha = 0.9, color = "darkorange")
 ggpubr::ggarrange(g1, g2, ncol = 2, nrow = 1)
 ```
 
