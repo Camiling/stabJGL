@@ -107,7 +107,7 @@ Due to the high-dimensional problem frequently encountered in real-life data, wh
 
 The *sparsity* of a graph is the number of edges divided by the maximal number of edges the graph can have. If the sparsity of a graph is sufficiently small, $\boldsymbol{\Theta}$ has enough zero elements to be of full rank and thus invertible and well defined. We then say that the graph, or precision matrix, is sparse.
 
-The graphical lasso performs sparse precision matrix estimation by imposing an $L_1$ penalty on the matrix entries (@friedman08). The graphical lasso aims to solve the penalized log-likelihood problem
+The graphical lasso performs sparse precision matrix estimation by imposing an $L_1$ penalty on the matrix entries (@friedman2008). The graphical lasso aims to solve the penalized log-likelihood problem
 
 $$
  \widehat{\boldsymbol{\Theta}} = \text{argmax}_{\boldsymbol{\Theta} \succ 0} \Big \{\log (\det\boldsymbol{\Theta}) - \text{tr} (\boldsymbol{S} \boldsymbol{\Theta}) - \lambda \| \boldsymbol{\Theta }\|_1 \Big \}, 
@@ -125,7 +125,7 @@ If one is interested in the graph structures of several data types, one possibil
 
 The joint graphical lasso is a generalized method for jointly estimating Gaussian graphical models on multiple types or sets of data. @danaher2014 use the term *classes* about the different data types for which they want to infer separate networks. The classes correspond to distinct but related conditions or data types. For $K$ classes, we let $\{\boldsymbol{\Theta}\} = (\boldsymbol{\Theta}^{(1)},\ldots, \boldsymbol{\Theta}^{(K)})$ be the set of their precision matrices. It is assumed that the set of $\sum_{k=1}^K n_k$ observations are independent. 
 
-In the joint graphical lasso, a penalty function is applied to the differences between the precision matrix estimates. @danaher2014 propose two different penalty functions, of which they recommend the `fused graphical lasso` for most applications. The fused graphical lasso employs a fused penalty to encourage both similar network structure and similar inverse covariance matrices across classes. The method aims to solve the penalized log-likelihood problem
+In the joint graphical lasso, a penalty function is applied to the differences between the precision matrix estimates. @danaher2014 propose two different penalty functions, of which they recommend the *fused graphical lasso* for most applications. The fused graphical lasso employs a fused penalty to encourage both similar network structure and similar inverse covariance matrices across classes. The method aims to solve the penalized log-likelihood problem
 
 $$
  \{\widehat{\boldsymbol{\Theta}} \}= \text{argmax}_{\{\boldsymbol{\Theta} \succ 0\}}  \Big \{ \sum\limits_{k=1}^{K} n_k [\log (\det \boldsymbol{\Theta}^{(k)} ) - \text{tr} (\boldsymbol{S}^{(k)}  \boldsymbol{\Theta}^{(k)} )] - \lambda_1\sum\limits_{k=1}^K\sum\limits_{i\neq j}|\theta_{ij}^{(k)}| - \lambda_2 \sum\limits_{k<k'}\| \boldsymbol{\Theta}^{(k)} - \boldsymbol{\Theta}^{(k')}\|_1 \}
