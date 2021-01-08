@@ -327,13 +327,13 @@ JoStARS_select_lambda1 = function(Y,rho=1,weights="equal",penalize.diagonal=FALS
 
 }
 
+
 #' Internal function used when selecting lambda1 with several threads in JoStARS
 #'
 #' @keywords internal
 JoStARS_select_lambda1_parallel = function(Y,rep.num,rho,n.vals,stars.subsample.ratios,
                                            lambda1s,lambda2,penalize.diagonal,
-                                           seed,array.list)
-  {
+                                           seed,array.list){
   # This function draws one subsample and performs JGL on it with each lambda1 value to consider
   set.seed(seed)
   Y.sample = list()
