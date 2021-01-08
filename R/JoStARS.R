@@ -289,7 +289,7 @@ JoStARS_select_lambda1 = function(Y,rho=1,weights="equal",penalize.diagonal=FALS
     cl <- parallel::makeCluster(nCores)
     doParallel::registerDoParallel(cl)
     res.list = foreach::foreach(i=1:rep.num) %dopar% {
-      JoStARS_select_lambda1_parallel(Y,rep.num=rep.num,rho=rho,n.vals=n.vals,stars.subsample.ratios=stars.subsample.ratios,
+      JoStARS:::JoStARS_select_lambda1_parallel(Y,rep.num=rep.num,rho=rho,n.vals=n.vals,stars.subsample.ratios=stars.subsample.ratios,
                                       lambda1s=lambda1s,lambda2=lambda2,penalize.diagonal = penalize.diagonal,
                                       seed=seeds[i], array.list=est$merge)
     }
