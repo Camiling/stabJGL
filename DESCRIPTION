@@ -30,7 +30,7 @@ Suggests:
     huge,
     glasso,
     knitr,
-    markdown,
+    rmarkdown,
     GGally,
     network,
     sna,
