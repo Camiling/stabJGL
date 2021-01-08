@@ -27,7 +27,6 @@ test_that("JoStARS returns objects of correct classes", {
   expect_equal(class(res$opt.fit.lambda1), "list")
   expect_equal(class(res$opt.sparsities.lambda1), "numeric")
   expect_equal(class(res$total.variability), "numeric")
-  expect_equal(class(res$variability), "matrix")
 })
 
 test_that("JoStARS throws error", {

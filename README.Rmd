@@ -90,7 +90,7 @@ res$opt.sparsities # the sparsities of the estimated precision matrices
 precision(abs(prec.mat) > 1e-7, res$opt.fit[[1]] != 0)
 precision(abs(prec.mat) > 1e-7, res$opt.fit[[2]] != 0)
 
-# example 2. scale-free data where where the data sets are from completely unrelated distributions
+# example 2: scale-free data where where the data sets are from completely unrelated distributions
 set.seed(123)
 n1 <- 100 
 n2 <- 80

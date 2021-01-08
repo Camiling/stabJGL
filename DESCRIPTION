@@ -1,6 +1,6 @@
 Package: JoStARS
-Title: Penalty selection in joint network analysis of multiple graphs with JoStARS
-Description: JoStARS performs penalty parameter selection in the joint graphical lasso, selecting both the sparsity- and the similarity controlling penalty parameters. 
+Title: Penalty Selection in Joint Network Analysis of Multiple Graphs with JoStARS
+Description: Performs JoStARS for penalty parameter selection in the joint graphical lasso, selecting both the sparsity- and the similarity controlling penalty parameters. 
         The objective is to borrow strength across simialar classes to increase statistical power, 
         while ensuring that the joint modelling may not decrease the accuracy of the resulting inferred graphs. 
         The method takes a set of data matrices for which graphs are to be inferred with the joint graphical lasso. 
@@ -30,6 +30,7 @@ Suggests:
     huge,
     glasso,
     knitr,
+    markdown,
     GGally,
     network,
     sna,
