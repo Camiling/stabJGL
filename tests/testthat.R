@@ -1,4 +1,4 @@
 library(testthat)
-library(JoStARS)
+library(stabJGL)
 
-testthat::test_check("JoStARS")
+testthat::test_check("stabJGL")

@@ -1,10 +1,10 @@
-#' Perform JoStARS
+#' Perform stabJGL
 #'
-#' @description  Implements JoStARS for penalty selection in joint network reconstruction of multiple graphs. JoStARS performs penalty parameter selection in the joint graphical lasso, selecting both the sparsity- and the similarity controlling penalty parameters.
+#' @description  Implements stabJGL for penalty selection in joint network reconstruction of multiple graphs. stabJGL performs penalty parameter selection in the joint graphical lasso, selecting both the sparsity- and the similarity controlling penalty parameters.
 #'
 #' @details The objective is to borrow strength across simialar classes to increase statistical power, while ensuring that the joint modelling may not decrease the accuracy of the resulting inferred graphs. The method takes a set of data matrices for which graphs are to be inferred with the joint graphical lasso. The method takes a list \code{Y} of \eqn{K} data matrices for which separate graphs are to be inferred, selects the sparsity controlling penalty parameter \eqn{\lambda_1} and similarity controlling penalty parameter \eqn{\lambda_2}, and performs the joint graphical lasso, resulting in \eqn{K} precision matrix estimates. To increase computational efficiency, the code can be run in parallel with \code{nCores} threads.
 #'
-#' @aliases jostars Jostars JoStars
+#' @aliases stabJGL stabJGL stabJGL
 #'
 #' @param Y A list of \eqn{K} data matrices, each of dimension \eqn{n_k} by \eqn{p} where \eqn{n_k} is the sample size of class \eqn{K} and \eqn{p} is the dimension.
 #'
@@ -49,7 +49,7 @@
 #'
 #' @return Object of class \code{"list"}. Contains the following items:
 #' \describe{
-#'   \item{opt.fit}{The JoStARS precision matrix estimates. A list of length \eqn{K} precision matrices, each of dimension \eqn{p} by \eqn{p}.}
+#'   \item{opt.fit}{The stabJGL precision matrix estimates. A list of length \eqn{K} precision matrices, each of dimension \eqn{p} by \eqn{p}.}
 #'   \item{opt.ebic}{The adapted eBIC value of the set of inferred graphs.}
 #'   \item{opt.sparsities}{The sparsities of the inferred graphs. A \eqn{K} dimensional vector.}
 #'   \item{opt.lambda1}{The selected value of \eqn{\lambda_1}.}
@@ -84,16 +84,16 @@
 #' x1 <- matrix(rnorm(5 * 20), ncol = 5)
 #' x2 <- matrix(rnorm(5 * 20), ncol = 5)
 #' Y = list(x1,x2)
-#' # perform JoStARS with variability threshold 0.1
-#' res <- JoStARS(Y)
-#' res$opt.fit # the list of estimated JoStARS precision matrices
+#' # perform stabJGL with variability threshold 0.1
+#' res <- stabJGL(Y)
+#' res$opt.fit # the list of estimated stabJGL precision matrices
 #' res$opt.lambda1 # the optimal selected value of lambda1
 #' res$opt.lambda2 # the optimal selected value of lambda2
 #' res$opt.sparsities # the sparsity of the estimated precision matrices
 #'
 #' # example 2: scaling the data
 #' set.seed(123)
-#' res <- JoStARS(Y, scale=TRUE)
+#' res <- stabJGL(Y, scale=TRUE)
 #'
 #' # example 3: scale-free data where where the data sets are
 #' #            from identical distributions
@@ -104,7 +104,7 @@
 #' x1 = MASS::mvrnorm(n, mu=rep(0,p),Sigma=dat$sigma)
 #' x2 = MASS::mvrnorm(n, mu=rep(0,p),Sigma=dat$sigma)
 #' Y=list(x1, x2)
-#' res <- JoStARS(Y, lambda2.max=0.3)
+#' res <- stabJGL(Y, lambda2.max=0.3)
 #' res$opt.lambda1 # the optimal selected value of lambda1
 #' res$opt.lambda2 # the optimal selected value of lambda2
 #' res$opt.sparsities # the sparsity of the estimated precision matrices
@@ -124,7 +124,7 @@
 #' x1 = MASS::mvrnorm(n1, mu=rep(0,p),Sigma=dat1$sigma)
 #' x2 = MASS::mvrnorm(n2, mu=rep(0,p),Sigma=dat2$sigma)
 #' Y = list(x1, x2)
-#' res <- JoStARS(Y, scale=TRUE,lambda2.max=0.3)
+#' res <- stabJGL(Y, scale=TRUE,lambda2.max=0.3)
 #' res$opt.lambda1 # the optimal selected value of lambda1
 #' res$opt.lambda2 # the optimal selected value of lambda2
 #' res$opt.sparsities # the sparsity of the estimated precision matrices
@@ -133,7 +133,7 @@
 #' precision(abs(dat2$omega) > 1e-7, res$opt.fit[[2]] != 0)
 #'
 #'
-JoStARS = function(Y,scale=T,penalize.diagonal=FALSE,var.thresh = 0.1, subsample.ratio = NULL,
+stabJGL = function(Y,scale=T,penalize.diagonal=FALSE,var.thresh = 0.1, subsample.ratio = NULL,
                    rep.num = 20,  nlambda1=20,lambda1.min=0.01,lambda1.max=1,nlambda2=20,lambda2.min=0,lambda2.max=0.1,lambda2.init=0.01,
                    ebic.gamma=0.2,verbose=T, retune.lambda1=F,parallelize=T,nCores=2,rho=1,weights="equal"){
 
@@ -174,11 +174,11 @@ JoStARS = function(Y,scale=T,penalize.diagonal=FALSE,var.thresh = 0.1, subsample
   est = list()
   if (scale) Y=lapply(Y,scale)
   # Start by selecting lambda1 while fixing lambda2 to its initial value
-  est.lambda1 = JoStARS_select_lambda1(Y,rho=rho,weights=weights, penalize.diagonal=penalize.diagonal, stars.thresh=var.thresh,
+  est.lambda1 = stabJGL_select_lambda1(Y,rho=rho,weights=weights, penalize.diagonal=penalize.diagonal, stars.thresh=var.thresh,
                                    stars.subsample.ratio=subsample.ratio, rep.num=rep.num,nlambda1=nlambda1,lambda1.min=lambda1.min,
                                    lambda1.max=lambda1.max, lambda2=lambda2.init,verbose=verbose,parallelize=parallelize,nCores=nCores)
   # Select lambda2
-  est.lambda2 = JoStARS_select_lambda2_eBIC(Y,rho=rho,weights=weights,penalize.diagonal=penalize.diagonal,
+  est.lambda2 = stabJGL_select_lambda2_eBIC(Y,rho=rho,weights=weights,penalize.diagonal=penalize.diagonal,
                                         nlambda2=nlambda2,lambda2.min=lambda2.min,lambda2.max=lambda2.max,
                                         lambda1=est.lambda1$opt.lambda1,gamma=ebic.gamma,verbose=verbose,parallelize=parallelize,
                                         nCores=nCores)
@@ -190,7 +190,7 @@ JoStARS = function(Y,scale=T,penalize.diagonal=FALSE,var.thresh = 0.1, subsample
   est$opt.sparsities = est.lambda2$opt.sparsities
   # If lambda1 should be retuned, select it while fixing lambda2
   if(retune.lambda1){
-    est.lambda1 = JoStARS_select_lambda1(Y,rho=rho,weights=weights, penalize.diagonal=penalize.diagonal, stars.thresh=var.thresh,
+    est.lambda1 = stabJGL_select_lambda1(Y,rho=rho,weights=weights, penalize.diagonal=penalize.diagonal, stars.thresh=var.thresh,
                                      stars.subsample.ratio=subsample.ratio, rep.num=rep.num,nlambda1=nlambda1,lambda1.min=lambda1.min,
                                      lambda1.max=lambda1.max, lambda2=est.lambda2$opt.lambda2,verbose=verbose,parallelize=parallelize,nCores=nCores)
     est$opt.fit = est.lambda1$opt.fit
@@ -209,10 +209,10 @@ JoStARS = function(Y,scale=T,penalize.diagonal=FALSE,var.thresh = 0.1, subsample
   return(est)
 }
 
-#' Internal function for selecting lambda1 in JoStARS
+#' Internal function for selecting lambda1 in stabJGL
 #'
 #' @keywords internal
-JoStARS_select_lambda1 = function(Y,rho=1,weights="equal",penalize.diagonal=FALSE,stars.thresh = 0.1, stars.subsample.ratio = NULL,rep.num = 20,
+stabJGL_select_lambda1 = function(Y,rho=1,weights="equal",penalize.diagonal=FALSE,stars.thresh = 0.1, stars.subsample.ratio = NULL,rep.num = 20,
                                   nlambda1=20,lambda1.min,lambda1.max, lambda2,verbose,parallelize=F,nCores=4){
   K = length(Y)
   n.vals = unlist(lapply(Y,nrow))
@@ -288,8 +288,8 @@ JoStARS_select_lambda1 = function(Y,rho=1,weights="equal",penalize.diagonal=FALS
     #doParallel::registerDoParallel(nCores)
     cl <- parallel::makeCluster(nCores)
     doParallel::registerDoParallel(cl)
-    res.list = foreach::foreach(i=1:rep.num, .export = 'JoStARS_select_lambda1_parallel') %dopar% {
-      JoStARS_select_lambda1_parallel(Y,rep.num=rep.num,rho=rho,n.vals=n.vals,stars.subsample.ratios=stars.subsample.ratios,
+    res.list = foreach::foreach(i=1:rep.num, .export = 'stabJGL_select_lambda1_parallel') %dopar% {
+      stabJGL_select_lambda1_parallel(Y,rep.num=rep.num,rho=rho,n.vals=n.vals,stars.subsample.ratios=stars.subsample.ratios,
                                       lambda1s=lambda1s,lambda2=lambda2,penalize.diagonal = penalize.diagonal,
                                       seed=seeds[i], array.list=est$merge)
     }
@@ -328,10 +328,10 @@ JoStARS_select_lambda1 = function(Y,rho=1,weights="equal",penalize.diagonal=FALS
 }
 
 
-#' Internal function used when selecting lambda1 with several threads in JoStARS
+#' Internal function used when selecting lambda1 with several threads in stabJGL
 #'
 #' @keywords internal
-JoStARS_select_lambda1_parallel = function(Y,rep.num,rho,n.vals,stars.subsample.ratios,
+stabJGL_select_lambda1_parallel = function(Y,rep.num,rho,n.vals,stars.subsample.ratios,
                                            lambda1s,lambda2,penalize.diagonal,
                                            seed,array.list){
   # This function draws one subsample and performs JGL on it with each lambda1 value to consider
@@ -362,11 +362,11 @@ JoStARS_select_lambda1_parallel = function(Y,rep.num,rho,n.vals,stars.subsample.
   return(array.list)
 }
 
-#' Internal function for selecting lambda2 in JoStARS
+#' Internal function for selecting lambda2 in stabJGL
 #'
 #'
 #' @keywords internal
-JoStARS_select_lambda2_eBIC = function(Y,rho=1,weights="equal",penalize.diagonal=FALSE,
+stabJGL_select_lambda2_eBIC = function(Y,rho=1,weights="equal",penalize.diagonal=FALSE,
                                        nlambda2=30,lambda2.min,lambda2.max, lambda1=NULL,gamma=NULL,verbose=F,
                                        parallelize=F,nCores=4){
   # Select lambda_2 by eBIC

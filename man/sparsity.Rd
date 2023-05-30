@@ -26,7 +26,7 @@ dat <- huge::huge.generator(n = n, d = p, graph = "scale-free")
 sparsity(dat$theta)
 }
 \seealso{
-\code{\link{JoStARS}} and \code{\link{confusion.matrix}}
+\code{\link{stabJGL}} and \code{\link{confusion.matrix}}
 }
 \author{
 Camilla Lingjaerde

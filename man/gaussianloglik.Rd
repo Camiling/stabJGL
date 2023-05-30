@@ -31,7 +31,7 @@ prec.mat <- dat$omega # true precision matrix
 gaussianloglik(var(dat$data), prec.mat, n)
 }
 \seealso{
-\code{\link{JoStARS}}
+\code{\link{stabJGL}}
 }
 \author{
 Camilla Lingjaerde

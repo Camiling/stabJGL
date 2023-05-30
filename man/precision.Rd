@@ -33,7 +33,7 @@ prec.mat.2[which(abs(prec.mat.2) < 1.5 & !diag(ncol(prec.mat.2)))] <- 0
 precision(prec.mat.1 != 0, prec.mat.2 != 0)
 }
 \seealso{
-\code{\link{JoStARS}} and \code{\link{confusion.matrix}}
+\code{\link{stabJGL}} and \code{\link{confusion.matrix}}
 }
 \author{
 Camilla Lingjaerde

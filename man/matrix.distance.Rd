@@ -33,7 +33,7 @@ prec.mat.2[which(abs(prec.mat.2) < 1.5 & !diag(ncol(prec.mat.2)))] <- 0
 matrix.distance(prec.mat.1, prec.mat.2)
 }
 \seealso{
-\code{\link{JoStARS}}
+\code{\link{stabJGL}}
 }
 \author{
 Camilla Lingjaerde

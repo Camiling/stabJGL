@@ -33,7 +33,7 @@ prec.mat.2[which(abs(prec.mat.2) < 1.5 & !diag(ncol(prec.mat.2)))] <- 0
 confusion.matrix(prec.mat.1 != 0, prec.mat.2 != 0)
 }
 \seealso{
-\code{\link{JoStARS}}
+\code{\link{stabJGL}}
 }
 \author{
 Camilla Lingjaerde

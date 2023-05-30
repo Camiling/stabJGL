@@ -36,7 +36,7 @@ prec.mat.list = list(prec.mat1,prec.mat2)
 AIC_adapted(cov.list, prec.mat.list, n.vals=c(n,n))
 }
 \seealso{
-\code{\link{JoStARS}}
+\code{\link{stabJGL}}
 }
 \author{
 Camilla Lingjaerde

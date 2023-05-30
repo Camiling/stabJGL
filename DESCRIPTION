@@ -1,19 +1,19 @@
-Package: JoStARS
-Title: Penalty Selection in Joint Network Analysis of Multiple Graphs with JoStARS
-Description: Performs JoStARS for penalty parameter selection in the joint graphical lasso, selecting both the sparsity- and the similarity controlling penalty parameters. 
+Package: stabJGL
+Title: Stable Sparsity and Similarity Selection in Joint Network Analysis of Multiple Graphs with stabJGL
+Description: Performs stabJGL for penalty parameter selection in the joint graphical lasso, selecting both the sparsity- and the similarity controlling penalty parameters. 
         The objective is to borrow strength across simialar classes to increase statistical power, 
         while ensuring that the joint modelling may not decrease the accuracy of the resulting inferred graphs. 
         The method takes a set of data matrices for which graphs are to be inferred with the joint graphical lasso. 
 Version: 0.0.0.9000
 Authors@R: 
     person("Camilla", "Lingjaerde", email = "camilla.lingjaerde@mrc-bsu.cam.ac.uk", role = c("cre", "aut"), comment = c(ORCID = "0000-0003-2701-5686"))
-URL: https://github.com/Camiling/JoStARS
+URL: https://github.com/Camiling/stabJGL
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Language: en-US
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.1
+RoxygenNote: 7.2.2
 Depends: R (>= 3.5.0)
 Imports: 
     stats,

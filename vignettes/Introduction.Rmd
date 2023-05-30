@@ -1,10 +1,10 @@
 ---
-title: "`JoStARS`: penalty parameter selection in joint network inference"
+title: "`stabJGL`: stable sparsity and simimilarity selection in joint network inference"
 author: "Camilla Lingjaerde"
 output: rmarkdown::html_vignette
 bibliography: ../inst/REFERENCES.bib
 vignette: >
-  %\VignetteIndexEntry{`JoStARS`: penalty parameter selection in joint network inference}
+  %\VignetteIndexEntry{`stabJGL`: stable sparsity and simimilarity selection in joint network inference}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup, include=FALSE, warning=FALSE}
-library(JoStARS)
+library(stabJGL)
 library(foreach)
 ```
  
@@ -32,7 +32,7 @@ library(foreach)
 
 > [The joint graphical lasso](#JGL)
 
-> [JoStARS](#JoStARS)
+> [stabJGL](#stabJGL)
 
 > [Examples](#ex)
 
@@ -44,9 +44,9 @@ library(foreach)
 # Introduction
  
 
-The `JoStARS` package implements JoStARS for penalty parameter selection in joint network reconstruction of multiple graphs, in the setting of Gaussian graphical models. JoStARS performs penalty parameter selection in the joint graphical lasso of @danaher2014, selecting both the sparsity controlling and the between-graph similarity controlling penalty parameters. The objective is to borrow strength across similar classes to increase statistical power, while ensuring that the joint modelling may not decrease the accuracy of the resulting inferred graphs. The method takes a list of data matrices for which separate graphs are to be inferred, and selects the penalty parameters with a data-driven approach. The sparsity controlling parameter is selected based on graph stability (@liu2010stability), while the similarity controlling parameter is selected with a likelihood-based approach (@foygel2010extended). 
+The `stabJGL` package implements stabJGL for penalty parameter selection in joint network reconstruction of multiple graphs, in the setting of Gaussian graphical models. stabJGL performs penalty parameter selection in the joint graphical lasso of @danaher2014, selecting both the sparsity controlling and the between-graph similarity controlling penalty parameters. The objective is to borrow strength across similar classes to increase statistical power, while ensuring that the joint modelling may not decrease the accuracy of the resulting inferred graphs. The method takes a list of data matrices for which separate graphs are to be inferred, and selects the penalty parameters with a data-driven approach. The sparsity controlling parameter is selected based on graph stability (@liu2010stability), while the similarity controlling parameter is selected with a likelihood-based approach (@foygel2010extended). 
 
-In this vignette, a brief introduction to Gaussian graphical network models, as well as the graphical lasso and its extension into the joint graphical lasso, is given. A description of the methodology of JoStARS is then given, followed by an example of the package usage. 
+In this vignette, a brief introduction to Gaussian graphical network models, as well as the graphical lasso and its extension into the joint graphical lasso, is given. A description of the methodology of stabJGL is then given, followed by an example of the package usage. 
 
 
 
@@ -64,7 +64,7 @@ with `?function_name`.
 ----------------------------- ------------------------------------------------------
 Function Name                 Description
 ----------------------------- ------------------------------------------------------
-`JoStARS`                     Performs JoStARS.
+`stabJGL`                     Performs stabJGL.
 
 `adapted_eBIC`                Calculates the adapted extended BIC (adapted eBIC) score of a set of estimated precision matrices.
 
@@ -77,7 +77,7 @@ Function Name                 Description
 `confusion.matrix`            Finds the confusion matrix between a graph and its estimate.
 ----------------------------- --------------------------------------------------
 
-: Main functions in the `JoStARS` package.
+: Main functions in the `stabJGL` package.
 
 
 
@@ -139,26 +139,26 @@ The joint graphical lasso is implemented in the R package `JGL` (@JGL), with the
 
 
 
-<a id="JoStARS"></a>
+<a id="stabJGL"></a>
 
 <br>
 
-# JoStARS
+# stabJGL
 
 
 <!---For several classes of data with similar underlying graph structures, the joint graphical lasso can drastically improve the accuracy of inferred graphs compared to the ordinary graphical lasso applied to the data from each class separately. The more similar the classes are, the more the graph inference will benefit from sharing information across classes. The penalty parameters $\lambda_1$ and $\lambda_2$ in the joint (fused) graphical lasso do however need to be chosen, and this is not a straightforward task. While the existing penalty parameter selection method based on the adapted AIC of @danaher2014 is computationally fast, the AIC is not a good fit for penalty selection in high-dimensional situations and tends to result in drastic over-selection of edges (@foygel2010extended, @liu2010stability). --->
 
 
-While the existing penalty parameter selection method for the joint graphical lasso based on the adapted AIC of @danaher2014 is computationally fast, the AIC is not a good fit for sparsity selection in high-dimensional situations and tends to result in drastic over-selection of edges (@foygel2010extended, @liu2010stability). JoStARS performs penalty parameter selection in the joint (fused) graphical lasso of @danaher2014, avoiding the problem of severe over- or under-selection of edges commonly associated with AIC based sparsity selection. The objective is to achieve appropriate sparsity, as well as to borrow strength across similar classes to increase statistical power while ensuring that the joint modelling may not decrease the accuracy of the resulting inferred graphs. 
+While the existing penalty parameter selection method for the joint graphical lasso based on the adapted AIC of @danaher2014 is computationally fast, the AIC is not a good fit for sparsity selection in high-dimensional situations and tends to result in drastic over-selection of edges (@foygel2010extended, @liu2010stability). stabJGL performs penalty parameter selection in the joint (fused) graphical lasso of @danaher2014, avoiding the problem of severe over- or under-selection of edges commonly associated with AIC based sparsity selection. The objective is to achieve appropriate sparsity, as well as to borrow strength across similar classes to increase statistical power while ensuring that the joint modelling may not decrease the accuracy of the resulting inferred graphs. 
 
-In JoStARS, the sparsity controlling parameter $\lambda_1$ is selected based on graph stability under subsampling (@liu2010stability), while the similarity controlling parameter $\lambda_2$ is selected with a likelihood-based approach (@foygel2010extended). In other words, JoStARS selects $\lambda_1$ based on graph stability and $\lambda_2$ based on the amount of similarity supported by the data. 
+In stabJGL, the sparsity controlling parameter $\lambda_1$ is selected based on graph stability under subsampling (@liu2010stability), while the similarity controlling parameter $\lambda_2$ is selected with a likelihood-based approach (@foygel2010extended). In other words, stabJGL selects $\lambda_1$ based on graph stability and $\lambda_2$ based on the amount of similarity supported by the data. 
 
 
 ## Selecting $\lambda_1$
 
-JoStARS starts by selecting $\lambda_1$, fixing $\lambda_2$ to a small value such as $0.01$. This way, JoStARS ensures that $\lambda_1$ is selected without $\lambda_2$ encouraging too much similarity, which could influence the selected the value of $\lambda_1$. The sparsity-controlling $\lambda_1$ is selected based on stability of graphs under subsampling, using the same reasoning as in the StARS method for sparsity selection (@liu2010stability). The method aims to select the least amount of regularization that makes graphs sparse as well as reproducible under random sampling. 
+stabJGL starts by selecting $\lambda_1$, fixing $\lambda_2$ to a small value such as $0.01$. This way, stabJGL ensures that $\lambda_1$ is selected without $\lambda_2$ encouraging too much similarity, which could influence the selected the value of $\lambda_1$. The sparsity-controlling $\lambda_1$ is selected based on stability of graphs under subsampling, using the same reasoning as in the StARS method for sparsity selection (@liu2010stability). The method aims to select the least amount of regularization that makes graphs sparse as well as reproducible under random sampling. 
 
-In JoStARS, $\lambda_1$ is selected by conducting many subsamplings and estimating the graph *variability*. For each value of $\lambda_1$ to consider, joint graphical lasso graphs are estimated for each set of sampled data, and the variability of each edge within each of the $K$ graph classes is measured. This edge variability is measured by estimating the variance of the binomial indicator of the event that two subsample graphs will agree on the edge. The variability of each graph is then measured as the average edge variability. Finally, the total variability of the set of joint graphical lasso graphs is measured as the average variability across all $K$ classes. This results in a variability estimate for each value of $\lambda_1$ to consider. 
+In stabJGL, $\lambda_1$ is selected by conducting many subsamplings and estimating the graph *variability*. For each value of $\lambda_1$ to consider, joint graphical lasso graphs are estimated for each set of sampled data, and the variability of each edge within each of the $K$ graph classes is measured. This edge variability is measured by estimating the variance of the binomial indicator of the event that two subsample graphs will agree on the edge. The variability of each graph is then measured as the average edge variability. Finally, the total variability of the set of joint graphical lasso graphs is measured as the average variability across all $K$ classes. This results in a variability estimate for each value of $\lambda_1$ to consider. 
 
 The smallest value of $\lambda_1$ whose resulting variability measure that does not exceed a predefined threshold $\beta_1$ is then selected. A threshold of $\beta_1=0.1$ is proposed, as suggested by (@liu2010stability) in the ordinary StARS algorithm. This threshold has a nice interpretability, as it means that up to $10\%$ instability, i.e. wrongful edge edge assignments in the graph, is accepted.
 
@@ -166,7 +166,7 @@ The smallest value of $\lambda_1$ whose resulting variability measure that does 
 ## Selecting $\lambda_2$
 
 
-After $\lambda_1$ has been selected, JoStARS selects $\lambda_2$ with an adapted version of the extended BIC of @foygel2010extended. In order to adjust the criterion to be computable for a set of precision matrices, it is modified in a similar fashion to the modified AIC of @danaher2014. The adapted eBIC score is given by
+After $\lambda_1$ has been selected, stabJGL selects $\lambda_2$ with an adapted version of the extended BIC of @foygel2010extended. In order to adjust the criterion to be computable for a set of precision matrices, it is modified in a similar fashion to the modified AIC of @danaher2014. The adapted eBIC score is given by
 
 
 $$
@@ -175,19 +175,19 @@ $$
 
 where $\widehat{\boldsymbol{\Theta}}^{(k)}_{\lambda_1,\lambda_2}$ is the estimated precision matrix of class $k$ corresponding to the penalty parameters $\lambda_1$ and $\lambda_2$, and $|E_{\lambda_1,\lambda_2}^{(k)}|$ is the size of the corresponding edge set. 
 
-By considering a grid of $\lambda_2$ values while $\lambda_1$ is fixed to the value selected in the previous step, the optimal value of $\lambda_2$ as selected by JoStARS is the one minimizing the adapted eBIC score. Like for the ordinary eBIC, the additional edge penalty parameter $\gamma\in [0,1]$ must be chosen. Notably, as the eBIC is not used for sparsity selection, but similarity selection, the choice of $\gamma$ is not as important since the criterion is being used to compare graphs with the same value of $\lambda_1$ and hence similar sparsity.
+By considering a grid of $\lambda_2$ values while $\lambda_1$ is fixed to the value selected in the previous step, the optimal value of $\lambda_2$ as selected by stabJGL is the one minimizing the adapted eBIC score. Like for the ordinary eBIC, the additional edge penalty parameter $\gamma\in [0,1]$ must be chosen. Notably, as the eBIC is not used for sparsity selection, but similarity selection, the choice of $\gamma$ is not as important since the criterion is being used to compare graphs with the same value of $\lambda_1$ and hence similar sparsity.
 
 ## Re-selecting $\lambda_1$
 
-Because of the shrinkage encouraged by the $L_1$ penalty used on the differences between precision matrices in the joint graphical lasso, the choice of $\lambda_2$ will affect the sparsity of the final inferred graph to some extent. JoStARS has already selected an appropriate sparsity level when selecting $\lambda_1$, and a chosen value of $\lambda_2$ that is very different from the initial value it was fixed to in the tuning of $\lambda_1$ could result in a very different sparsity level. If this is a concern, one might want to re-tune $\lambda_1$ by re-running the selection routine for it described above, with $\lambda_2$ fixed to the new value selected by the adapted eBIC. This will however result in a loss of computational efficiency, but should be considered if $\lambda_2$ is selected to be very different from its initial value.
+Because of the shrinkage encouraged by the $L_1$ penalty used on the differences between precision matrices in the joint graphical lasso, the choice of $\lambda_2$ will affect the sparsity of the final inferred graph to some extent. stabJGL has already selected an appropriate sparsity level when selecting $\lambda_1$, and a chosen value of $\lambda_2$ that is very different from the initial value it was fixed to in the tuning of $\lambda_1$ could result in a very different sparsity level. If this is a concern, one might want to re-tune $\lambda_1$ by re-running the selection routine for it described above, with $\lambda_2$ fixed to the new value selected by the adapted eBIC. This will however result in a loss of computational efficiency, but should be considered if $\lambda_2$ is selected to be very different from its initial value.
 
 ## Summary
 
 For several classes of data with similar underlying graph structures, the joint graphical lasso can drastically improve the accuracy of inferred graphs compared to the ordinary graphical lasso applied to the data from each class separately. The more similar the classes are, the more the graph inference will benefit from sharing information across classes. The penalty parameters $\lambda_1$ and $\lambda_2$ do however need to be chosen, and this should be done both with respect to achieving an accurate sparsity level and with resepect to achieving appropriate similarity. 
 
-By selecting the sparsity-controlling parameter $\lambda_1$ based on within-graph stability under subsamplings, JoStARS avoids the problem of severe over- or under-selection of edges commonly associated with AIC based sparsity selection (@liu2010stability, @foygel2010extended). Since the similarity controlling parameter $\lambda_2$ is chosen with a penalised likelihood-based approach constructed for high-dimensional cases, JoStARS enforces as much similarity as is supported by the data while avoiding a favouring of large graphs. This way, too strong similarity encouragement that might negatively affect the model fit is avoided. In other words, there is much to gain yet little to lose by using JoStARS to select the parameters. 
+By selecting the sparsity-controlling parameter $\lambda_1$ based on within-graph stability under subsamplings, stabJGL avoids the problem of severe over- or under-selection of edges commonly associated with AIC based sparsity selection (@liu2010stability, @foygel2010extended). Since the similarity controlling parameter $\lambda_2$ is chosen with a penalised likelihood-based approach constructed for high-dimensional cases, stabJGL enforces as much similarity as is supported by the data while avoiding a favouring of large graphs. This way, too strong similarity encouragement that might negatively affect the model fit is avoided. In other words, there is much to gain yet little to lose by using stabJGL to select the parameters. 
 
-Additionally, JoStARS also has a convenient interpretability through the selected value of $\lambda_2$, providing a *similarity score* for the classes of data. A chosen value close to zero indicates no similarity while a larger value indicates that encouraging similarity between their graphs improves the inference. 
+Additionally, stabJGL also has a convenient interpretability through the selected value of $\lambda_2$, providing a *similarity score* for the classes of data. A chosen value close to zero indicates no similarity while a larger value indicates that encouraging similarity between their graphs improves the inference. 
 
 
 
@@ -205,9 +205,9 @@ Additionally, JoStARS also has a convenient interpretability through the selecte
 # Examples
 
 
-The main function `JoStARS` takes a list of $K$ data matrices, each of dimension $n_k \times p$ where $n_k$ is the sample size of *class* (or data set) $k$, for which separate graphs are to be inferred. The function uses JoStARS to select the sparsity controlling penalty parameter $\lambda_1$ and similarity controlling penalty parameter $\lambda_2$, and uses the joint graphical lasso (@danaher2014) to estimate the inverse covariance matrices (precision matrix) of each of the $K$ classes. For each class, a graph structure can then be determined by letting there be an edge between all pairs of variables, or nodes, $(i,j)$ whose corresponding element in the estimated precision matrix is non-zero. 
+The main function `stabJGL` takes a list of $K$ data matrices, each of dimension $n_k \times p$ where $n_k$ is the sample size of *class* (or data set) $k$, for which separate graphs are to be inferred. The function uses stabJGL to select the sparsity controlling penalty parameter $\lambda_1$ and similarity controlling penalty parameter $\lambda_2$, and uses the joint graphical lasso (@danaher2014) to estimate the inverse covariance matrices (precision matrix) of each of the $K$ classes. For each class, a graph structure can then be determined by letting there be an edge between all pairs of variables, or nodes, $(i,j)$ whose corresponding element in the estimated precision matrix is non-zero. 
 
-`JoStARS` selects the penalty parameters with a data-driven approach. The sparsity controlling parameter $\lambda_1$ is selected based on within-graph graph stability under subsamplings (@liu2010stability), with the aim of choosing the minimal amount of regularization needed to get sparse graphs that are reproducible under random sampling. This requires many subsamplings and model fittings, and to increase computational efficiency this part of the method can be run in parallel with a user-provided number of threads.
+`stabJGL` selects the penalty parameters with a data-driven approach. The sparsity controlling parameter $\lambda_1$ is selected based on within-graph graph stability under subsamplings (@liu2010stability), with the aim of choosing the minimal amount of regularization needed to get sparse graphs that are reproducible under random sampling. This requires many subsamplings and model fittings, and to increase computational efficiency this part of the method can be run in parallel with a user-provided number of threads.
 
 The between-graph similarity controlling parameter $\lambda_2$ is selected with a likelihood-based approach (@foygel2010extended). Using a version of the extended BIC adapted to evaluate a set of graphs as the selection criterion, the method ensures that graph similarity is only enforced to the extent that it improves the model fit. 
 
@@ -231,7 +231,7 @@ prec.mat <- dat$omega # the true precision matrix of both data sets
 x1 = MASS::mvrnorm(n1, mu=rep(0,p),Sigma=dat$sigma) # data set 1
 x2 = MASS::mvrnorm(n2, mu=rep(0,p),Sigma=dat$sigma) # data set 2
 Y=list(x1, x2)
-res <- JoStARS(Y, lambda2.max=0.3) 
+res <- stabJGL(Y, lambda2.max=0.3) 
 adj.mat1 <- res$opt.fit[[1]] !=0 # the estimated adjacency matrix of graph 1
 adj.mat2 <- res$opt.fit[[2]] !=0 # the estimated adjacency matrix of graph 2
 res$opt.lambda1 # the optimal selected value of lambda1
@@ -255,7 +255,7 @@ prec.mat2 <- dat2$omega # the true precision matrix of data set 2
 x1 = MASS::mvrnorm(n1, mu=rep(0,p),Sigma=dat1$sigma)
 x2 = MASS::mvrnorm(n2, mu=rep(0,p),Sigma=dat2$sigma)
 Y = list(x1, x2)
-res <- JoStARS(Y, scale=T,lambda2.max=0.3)
+res <- stabJGL(Y, scale=T,lambda2.max=0.3)
 adj.mat1 <- res$opt.fit[[1]] !=0 # the estimated adjacency matrix of graph 1
 adj.mat2 <- res$opt.fit[[2]] !=0 # the estimated adjacency matrix of graph 2
 res$opt.lambda1 # the optimal selected value of lambda1
@@ -267,7 +267,7 @@ precision(abs(prec.mat2) > 1e-7, adj.mat2 != 0)
 
 ```
 
-The resulting JoStARS graphs can be visualised with functions from the `network` and `ggnet2` libraries. 
+The resulting stabJGL graphs can be visualised with functions from the `network` and `ggnet2` libraries. 
 
 
 ```{r, results='hide', fig.align='center', out.width='60%'}

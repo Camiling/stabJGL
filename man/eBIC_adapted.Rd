@@ -39,7 +39,7 @@ eBIC_adapted(cov.list, prec.mat.list, n.vals=c(n,n), gamma = 0.2)
 
 }
 \seealso{
-\code{\link{JoStARS}}
+\code{\link{stabJGL}}
 }
 \author{
 Camilla Lingjaerde

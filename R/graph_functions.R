@@ -7,7 +7,7 @@
 #' @param n.vals  The number of observations in each class. A vector.
 #' @param gamma  The value of the additional edge penalty parameter \eqn{\gamma} to use in the adapted eBIC. Default value is \eqn{0.2}.
 #'
-#' @seealso \code{\link{JoStARS}}
+#' @seealso \code{\link{stabJGL}}
 #'
 #' @return The adapted eBIC score.
 #'
@@ -62,7 +62,7 @@ eBIC_adapted = function(theta, sample.cov,n.vals,gamma=0.2) {
 #' @param sample.cov The list of sample covariance matrices of the different sets of observed data.
 #' @param n.vals  The number of observations in each class. A vector.
 #'
-#' @seealso \code{\link{JoStARS}}
+#' @seealso \code{\link{stabJGL}}
 #'
 #' @return The adapted AIC score.
 #'
@@ -113,7 +113,7 @@ AIC_adapted = function(theta, sample.cov,n.vals) {
 #'
 #' @param mat2 The second precision matrix. Assumed to be sparse.
 #'
-#' @seealso \code{\link{JoStARS}}
+#' @seealso \code{\link{stabJGL}}
 #'
 #'
 #' @return Numeric matrix distance.
@@ -165,7 +165,7 @@ matrix.distance <- function(mat1, mat2) {
 #' @param g The adjacency matrix of the graph.
 #'
 #'
-#' @seealso \code{\link{JoStARS}} and \code{\link{confusion.matrix}}
+#' @seealso \code{\link{stabJGL}} and \code{\link{confusion.matrix}}
 #'
 #'
 #' @return Numeric sparsity.
@@ -205,7 +205,7 @@ sparsity <- function(g) {
 #' @param theta The estimated precision matrix.
 #' @param n  The number of observations.
 #'
-#' @seealso \code{\link{JoStARS}}
+#' @seealso \code{\link{stabJGL}}
 #'
 #' @return Numerical value of the multivariate Gaussian profile log likelihood of the precision matrix.
 #'
@@ -243,7 +243,7 @@ gaussianloglik <- function(sample.cov, theta, n) {
 #' @param theta The estimated precision matrix.
 #' @param n  The number of observations.
 #'
-#' @seealso \code{\link{JoStARS}}
+#' @seealso \code{\link{stabJGL}}
 #'
 #' @return The AIC score.
 #'
@@ -279,7 +279,7 @@ gaussianAIC <- function(sample.cov, theta, n) {
 #' @param n  The number of observations.
 #' @param gamma  The value of the additional edge penalty parameter \eqn{\gamma} to use in the eBIC. Default value is \eqn{0}.
 #'
-#' @seealso \code{\link{JoStARS}}
+#' @seealso \code{\link{stabJGL}}
 #'
 #' @return The eBIC score.
 #'
@@ -321,7 +321,7 @@ eBIC <- function(sample.cov, theta, n, gamma = 0) {
 #'
 #' @param g.hat The adjacency matrix of the estimated graph.
 #'
-#' @seealso \code{\link{JoStARS}}
+#' @seealso \code{\link{stabJGL}}
 #'
 #'
 #' @return The \eqn{2} by \eqn{2} confusion matrix. Element \code{[1,1]} is the number of true positives, element \code{[1,2]} the number of false positives, element  \code{[2,1]} the number of false negatives and  \code{[2,2]} the number of true negatives.
@@ -370,7 +370,7 @@ confusion.matrix <- function(g, g.hat) {
 #'
 #' @param g.hat The adjacency matrix of the estimated graph.
 #'
-#' @seealso \code{\link{JoStARS}} and \code{\link{confusion.matrix}}
+#' @seealso \code{\link{stabJGL}} and \code{\link{confusion.matrix}}
 #'
 #'
 #' @return Numeric recall.
@@ -414,7 +414,7 @@ recall <- function(g, g.hat) {
 #'
 #' @param g.hat The adjacency matrix of the estimated graph.
 #'
-#' @seealso \code{\link{JoStARS}} and \code{\link{confusion.matrix}}
+#' @seealso \code{\link{stabJGL}} and \code{\link{confusion.matrix}}
 #'
 #'
 #' @return Numeric precision.

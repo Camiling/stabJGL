@@ -33,7 +33,7 @@ prec.mat <- dat$omega # true precision matrix
 eBIC(var(dat$data), prec.mat, n, gamma = 0.2)
 }
 \seealso{
-\code{\link{JoStARS}}
+\code{\link{stabJGL}}
 }
 \author{
 Camilla Lingjaerde
