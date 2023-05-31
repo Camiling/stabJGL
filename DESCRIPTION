@@ -18,7 +18,6 @@ Depends: R (>= 4.1.0)
 Imports: 
     stats,
     Matrix,
-    remotes, 
     JGL, 
     foreach, 
     doParallel, 
@@ -26,6 +25,7 @@ Imports:
 Suggests:
     igraph,
     mvtnorm,
+    remotes,
     MASS,
     huge,
     glasso,

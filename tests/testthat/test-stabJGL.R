@@ -59,18 +59,29 @@ test_that("stabJGL default arguments", {
   p <- 5
   dat <- huge::huge.generator(n = n, d = p, graph = "scale-free", verbose = F)
   dat.list = list(dat$data, dat$data)
+  set.seed(11)
   res <- stabJGL(dat.list,verbose = F)
 
   # Test defalt arguments
+  set.seed(11)
   expect_equal(res$opt.ebic, stabJGL(dat.list, ebic.gamma = 0.2, verbose = F)$opt.ebic) # ebic.gamma
+  set.seed(11)
   expect_equal(res$opt.ebic, stabJGL(dat.list, var.thresh = 0.1, verbose = F)$opt.ebic) # var.thresh
+  set.seed(11)
   expect_equal(res$opt.ebic, stabJGL(dat.list, scale = TRUE, verbose = F)$opt.ebic) # scaling
+  set.seed(11)
   expect_equal(res$opt.ebic, stabJGL(dat.list, penalize.diagonal = FALSE, verbose = F)$opt.ebic) # penalize diagonal
+  set.seed(11)
   expect_equal(res$opt.ebic, stabJGL(dat.list, subsample.ratio = NULL, verbose = F)$opt.ebic) # subsample ratio
+  set.seed(11)
   expect_equal(res$opt.ebic, stabJGL(dat.list, rep.num=20, verbose = F)$opt.ebic) # number of subsamplings
+  set.seed(11)
   expect_equal(res$opt.ebic, stabJGL(dat.list, retune.lambda1 = FALSE, verbose = F)$opt.ebic) # retuning lambda
+  set.seed(11)
   expect_equal(res$opt.ebic, stabJGL(dat.list, nlambda1 = 20, verbose = F)$opt.ebic) # subsample ratio
+  set.seed(11)
   expect_equal(res$opt.ebic, stabJGL(dat.list, nlambda2 = 20, verbose = F)$opt.ebic) # subsample ratio
+  set.seed(11)
   expect_equal(res$opt.ebic, stabJGL(dat.list, weights='equal', verbose = F)$opt.ebic) # equal weighing of classes
 })
 
