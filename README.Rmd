@@ -22,7 +22,7 @@ library(foreach)
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/#experimental)
 [![codecov](https://codecov.io/gh/Camiling/stabJGL/branch/main/graph/badge.svg?token=QL5ZW3RQZD)](https://codecov.io/gh/Camiling/stabJGL)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![R build status](https://github.com/Camiling/stabJGL/workflows/R-CMD-check/badge.svg)](https://github.com/Camiling/stabJGL/actions)
+[![R-CMD-check](https://github.com/camiling/stabJGL/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/camiling/stabJGL/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 <!-- IF ON CRAN [![CRAN_Status_Badge](https://www.r-pkg.org/badges/version-last-release/shapr)]
