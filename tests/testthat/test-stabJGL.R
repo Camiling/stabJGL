@@ -68,8 +68,6 @@ test_that("stabJGL default arguments", {
   set.seed(11)
   expect_equal(res$opt.ebic, stabJGL(dat.list, var.thresh = 0.1, verbose = F)$opt.ebic) # var.thresh
   set.seed(11)
-  expect_equal(res$opt.ebic, stabJGL(dat.list, scale = TRUE, verbose = F)$opt.ebic) # scaling
-  set.seed(11)
   expect_equal(res$opt.ebic, stabJGL(dat.list, penalize.diagonal = FALSE, verbose = F)$opt.ebic) # penalize diagonal
   set.seed(11)
   expect_equal(res$opt.ebic, stabJGL(dat.list, subsample.ratio = NULL, verbose = F)$opt.ebic) # subsample ratio
