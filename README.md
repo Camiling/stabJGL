@@ -16,19 +16,19 @@ MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.or
 
 # `stabJGL` <img src="man/figures/stabJGLlogo.png" align="right" height="150"/>
 
-The `stabJGL` package implements stabJGL for sparsity and similarity
-selection in joint network reconstruction of multiple graphs, in the
-setting of Gaussian graphical models. stabJGL performs penalty parameter
-selection in the joint graphical lasso of Danaher, Wang, and Witten
-(2014), selecting both the sparsity controlling and the between-graph
-similarity controlling penalty parameters. The objective is to borrow
-strength across similar classes to increase statistical power, while
-ensuring that the joint modelling may not decrease the accuracy of the
-resulting inferred graphs. The method takes a list of data matrices for
-which separate graphs are to be inferred, and selects the penalty
-parameters with a data-driven approach. The sparsity controlling
-parameter is selected based on graph stability (Liu, Roeder, and
-Wasserman (2010)), while the similarity controlling parameter is
+The `stabJGL` package implements stabJGL for stable sparsity and
+similarity selection in joint network reconstruction of multiple graphs,
+in the setting of Gaussian graphical models. stabJGL performs penalty
+parameter selection in the joint graphical lasso of Danaher, Wang, and
+Witten (2014), selecting both the sparsity controlling and the
+between-graph similarity controlling penalty parameters. The objective
+is to borrow strength across similar classes to increase statistical
+power, while ensuring that the joint modelling may not decrease the
+accuracy of the resulting inferred graphs. The method takes a list of
+data matrices for which separate graphs are to be inferred, and selects
+the penalty parameters with a data-driven approach. The sparsity
+controlling parameter is selected based on graph stability (Liu, Roeder,
+and Wasserman (2010)), while the similarity controlling parameter is
 selected with a likelihood-based approach (Foygel and Drton (2010)).
 
 ## Installation
